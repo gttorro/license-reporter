@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPLA Core Reporting</title>
+<style>
+:root{
+  --bg:#f6f7f9;--card:#fff;--fg:#1c2330;--muted:#647084;--line:#e3e6eb;
+  --accent:#2f6fde;--accent2:#7aa4ee;--warn:#c27c0e;--bad:#c23b3b;--ok:#2c8a4b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161d;--card:#1b212b;--fg:#e6e9ef;--muted:#97a1b3;--line:#2c3441;
+  --accent:#6b9cf5;--accent2:#3d5f9e;--warn:#e0a640;--bad:#e46a6a;--ok:#5cc07f;}}
+:root[data-theme="dark"]{
+  --bg:#12161d;--card:#1b212b;--fg:#e6e9ef;--muted:#97a1b3;--line:#2c3441;
+  --accent:#6b9cf5;--accent2:#3d5f9e;--warn:#e0a640;--bad:#e46a6a;--ok:#5cc07f;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--line);background:var(--card)}
+h1{font-size:18px;margin:0}
+h2{font-size:15px;margin:0 0 12px}
+main{max-width:1280px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.kpi .l{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-size:28px;font-weight:650;font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi .s{color:var(--muted);font-size:12px}
+.kpi.main{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}
+select,button{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+button:hover,select:hover{border-color:var(--accent)}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--muted);font-weight:600;font-size:12px;cursor:pointer;user-select:none}
+td.n,th.n{text-align:right}
+tfoot td{font-weight:700;border-top:2px solid var(--fg);border-bottom:none}
+tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+tbody tr.click{cursor:pointer}
+.tag{display:inline-block;padding:1px 7px;border-radius:9px;font-size:11px;border:1px solid var(--line)}
+.tag.dc{color:var(--accent);border-color:var(--accent)}
+.tag.std{color:var(--ok);border-color:var(--ok)}
+.tag.oth{color:var(--warn);border-color:var(--warn)}
+.warn{color:var(--warn)}.bad{color:var(--bad)}.muted{color:var(--muted)}
+#chart svg{width:100%;height:auto;display:block}
+#chart .bar{fill:var(--accent)}#chart .bar.dim{fill:var(--accent2)}
+#chart text{fill:var(--muted);font-size:10px}
+#chart line{stroke:var(--line)}
+#msg{padding:12px 16px;border-radius:8px;border:1px dashed var(--line);color:var(--muted)}
+#drop.over{outline:2px dashed var(--accent);outline-offset:-8px}
+details summary{cursor:pointer;color:var(--muted)}
+@media (max-width:600px){header{padding:12px 16px}.kpi .v{font-size:22px}}
+</style>
+</head>
+<body id="drop">
+<header>
+  <h1>SPLA Core Reporting <span class="muted" style="font-weight:400">· Windows Server (VMM-Hosts)</span></h1>
+  <div class="ctl">
+    <label>Monat <select id="month"></select></label>
+    <button id="exp" title="Monatsreport als CSV herunterladen">Export CSV</button>
+    <button id="reload">Neu laden</button>
+    <label><button id="pick" type="button">CSV wählen…</button><input id="file" type="file" accept=".csv" multiple hidden></label>
+  </div>
+</header>
+<main>
+  <div id="msg">Lade CSV-Dateien…</div>
+  <section class="kpis" id="kpis"></section>
+  <section class="card">
+    <h2>Lizenzpflichtige Cores pro Tag <span class="muted" id="chartsub" style="font-weight:400"></span></h2>
+    <div id="chart"></div>
+  </section>
+  <section class="card">
+    <h2>Hosts im Monat <span class="muted" id="hostsub" style="font-weight:400"></span></h2>
+    <table id="hosts"></table>
+  </section>
+  <section class="card">
+    <h2>Monatsübersicht</h2>
+    <table id="months"></table>
+  </section>
+  <section class="card">
+    <details>
+      <summary>Berechnungsregeln &amp; geladene Dateien</summary>
+      <ul>
+        <li>Pro Host werden alle physischen Cores gezählt (<code>PhysicalCPUCount × CoresPerCPU</code>); Hyperthreading (LogicalCPUCount) zählt nicht.</li>
+        <li>Mindestlizenzierung Windows Server: 8 Cores pro Prozessor, 16 Cores pro Server. Lizenziert wird in 2‑Core‑Packs.</li>
+        <li>Monatswert pro Host = Höchststand (Peak) aller Tages-Exporte im Monat. Ein Host zählt, sobald er an einem Tag im Monat auftaucht.</li>
+        <li>Edition wird aus <code>OperatingSystem</code> gelesen (Datacenter / Standard), massgebend ist der letzte Tag im Monat.</li>
+        <li>Das Datum wird aus dem Dateinamen gelesen (<code>…_JJJJMMTT.csv</code>). Mehrere Dateien am selben Tag: die letzte gewinnt.</li>
+      </ul>
+      <div id="files" class="muted"></div>
+    </details>
+  </section>
+</main>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const fmt = n => n.toLocaleString("de-CH");
+let days = new Map();   // "YYYY-MM-DD" -> {file, hosts:[...]}
+let sortState = {key:"lic", dir:-1};
+
+/* ---------- CSV ---------- */
+function parseCSV(text){
+  text = text.replace(/^﻿/, "");
+  const first = text.split(/\r?\n/,1)[0];
+  const delim = (first.split(";").length > first.split(",").length) ? ";" : ",";
+  const rows = []; let row = [], f = "", q = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (q){
+      if (c === '"'){ if (text[i+1] === '"'){ f += '"'; i++; } else q = false; }
+      else f += c;
+    } else if (c === '"') q = true;
+    else if (c === delim){ row.push(f); f = ""; }
+    else if (c === "\n" || c === "\r"){
+      if (c === "\r" && text[i+1] === "\n") i++;
+      row.push(f); f = ""; if (row.some(x => x !== "")) rows.push(row); row = [];
+    } else f += c;
+  }
+  row.push(f); if (row.some(x => x !== "")) rows.push(row);
+  if (!rows.length) return [];
+  const head = rows.shift().map(h => h.trim());
+  return rows.map(r => Object.fromEntries(head.map((h, i) => [h, (r[i] ?? "").trim()])));
+}
+
+function edition(os){
+  if (/datacenter/i.test(os)) return "Datacenter";
+  if (/standard/i.test(os)) return "Standard";
+  return "Andere";
+}
+function licCores(cpus, cpc){
+  if (!cpus || !cpc) return 0;
+  const c = Math.max(cpus * Math.max(cpc, 8), 16);
+  return Math.ceil(c / 2) * 2;
+}
+function toHost(r){
+  const cpus = parseInt(r.PhysicalCPUCount) || 0, cpc = parseInt(r.CoresPerCPU) || 0;
+  return {
+    name: (r.ComputerName || "").toUpperCase(),
+    cluster: r.HostCluster || "",
+    cpus, cpc, phys: cpus * cpc,
+    logical: parseInt(r.LogicalCPUCount) || 0,
+    lic: licCores(cpus, cpc),
+    os: r.OperatingSystem || "", ed: edition(r.OperatingSystem || ""),
+    desc: r.Description || "", state: r.ComputerState || ""
+  };
+}
+function dateFromName(name){
+  const m = name.match(/(20\d{2})[-_]?(\d{2})[-_]?(\d{2})(?!.*\d{8})/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+function addFile(name, text, lastMod){
+  let d = dateFromName(name);
+  if (!d && lastMod) d = new Date(lastMod).toISOString().slice(0,10);
+  if (!d) return false;
+  const hosts = parseCSV(text).filter(r => r.ComputerName).map(toHost);
+  // doppelte Hosts innerhalb einer Datei zusammenfassen
+  const uniq = new Map(); hosts.forEach(h => uniq.set(h.name, h));
+  days.set(d, {file:name, hosts:[...uniq.values()]});
+  return true;
+}
+
+/* ---------- Laden ---------- */
+async function listCSVs(){
+  // Liest das Directory-Listing des Webservers (IIS directoryBrowse, Apache/nginx autoindex, python http.server)
+  const res = await fetch("./", {cache:"no-store"});
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const html = await res.text();
+  if (html.includes('id="drop"')) throw new Error("Webserver liefert eine Startseite statt der Verzeichnisliste – Seite nicht als index.html/default.htm ablegen");
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const set = new Set();
+  doc.querySelectorAll("a[href]").forEach(a => {
+    const href = a.getAttribute("href").split("?")[0];
+    if (/\.csv$/i.test(href)) set.add(new URL(href, location.href).href);
+  });
+  return [...set];
+}
+async function loadFromServer(){
+  days.clear();
+  if (location.protocol === "file:"){
+    msg("Seite lokal geöffnet (file://): Browser dürfen den Ordner nicht auflisten. Bitte CSV-Dateien hierher ziehen oder „CSV wählen…“ nutzen – oder den Ordner über einen Webserver ausliefern.");
+    return render();
+  }
+  try{
+    const urls = await listCSVs();
+    if (!urls.length){ msg("Keine CSV-Dateien im Ordner gefunden (oder Directory-Listing auf dem Webserver deaktiviert)."); return render(); }
+    msg(`Lade ${urls.length} Dateien…`);
+    let ok = 0;
+    await Promise.all(urls.map(async u => {
+      try{
+        const r = await fetch(u, {cache:"no-store"});
+        if (r.ok && addFile(decodeURIComponent(u.split("/").pop()), await r.text(), r.headers.get("last-modified"))) ok++;
+      }catch(e){ console.warn(u, e); }
+    }));
+    msg(ok === urls.length ? "" : `${ok} von ${urls.length} Dateien geladen.`);
+  }catch(e){
+    msg("Ordner konnte nicht aufgelistet werden (" + e.message + "). Directory-Listing aktivieren oder CSV-Dateien hierher ziehen.");
+  }
+  render();
+}
+async function loadLocal(files){
+  for (const f of files) if (/\.csv$/i.test(f.name)) addFile(f.name, await f.text(), f.lastModified);
+  msg(""); render();
+}
+function msg(t){ const m = $("#msg"); m.textContent = t; m.hidden = !t; }
+
+/* ---------- Auswertung ---------- */
+function monthAgg(month){
+  const dlist = [...days.keys()].filter(d => d.startsWith(month)).sort();
+  const hosts = new Map();
+  for (const d of dlist){
+    for (const h of days.get(d).hosts){
+      let a = hosts.get(h.name);
+      if (!a){ a = {...h, peakLic:0, peakPhys:0, daysSeen:0, first:d, last:d, notResp:0}; hosts.set(h.name, a); }
+      Object.assign(a, {cluster:h.cluster || a.cluster, os:h.os, ed:h.ed, desc:h.desc, state:h.state, cpus:h.cpus, cpc:h.cpc, logical:h.logical, last:d});
+      a.peakLic = Math.max(a.peakLic, h.lic);
+      a.peakPhys = Math.max(a.peakPhys, h.phys);
+      a.daysSeen++;
+      if (!/^responding$/i.test(h.state)) a.notResp++;
+    }
+  }
+  const list = [...hosts.values()];
+  const sum = (f, ed) => list.filter(h => !ed || h.ed === ed).reduce((s, h) => s + f(h), 0);
+  const daily = dlist.map(d => ({d, lic: days.get(d).hosts.reduce((s, h) => s + h.lic, 0), n: days.get(d).hosts.length}));
+  return {
+    month, days: dlist, daily, hosts: list,
+    lic: sum(h => h.peakLic), phys: sum(h => h.peakPhys),
+    licDC: sum(h => h.peakLic, "Datacenter"), licSTD: sum(h => h.peakLic, "Standard"), licOTH: sum(h => h.peakLic, "Andere"),
+    cpus: sum(h => h.cpus)
+  };
+}
+function months(){ return [...new Set([...days.keys()].map(d => d.slice(0,7)))].sort().reverse(); }
+function monthLabel(m){ const [y, mo] = m.split("-"); return new Date(y, mo-1, 1).toLocaleDateString("de-CH", {month:"long", year:"numeric"}); }
+function daysInMonth(m){ const [y, mo] = m.split("-").map(Number); return new Date(y, mo, 0).getDate(); }
+
+/* ---------- Rendering ---------- */
+function render(){
+  const ms = months(), sel = $("#month"), cur = sel.value;
+  sel.innerHTML = ms.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join("");
+  if (ms.includes(cur)) sel.value = cur;
+  if (!ms.length){ $("#kpis").innerHTML = ""; $("#chart").innerHTML = ""; $("#hosts").innerHTML = ""; $("#months").innerHTML = ""; $("#files").textContent = ""; return; }
+  const a = monthAgg(sel.value);
+  renderKPIs(a); renderChart(a); renderHosts(a); renderMonths(ms, sel.value);
+  $("#files").innerHTML = `${days.size} Tages-Exporte geladen: ` +
+    [...days.entries()].sort().map(([d, v]) => `<span title="${d}">${esc(v.file)}</span>`).join(", ");
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function renderKPIs(a){
+  const dim = daysInMonth(a.month), missing = dim - a.days.length;
+  const isCurrent = a.month === new Date().toISOString().slice(0,7);
+  const k = (l, v, s, cls = "") => `<div class="kpi ${cls}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+  $("#kpis").innerHTML =
+    k("SPLA Cores (Total)", fmt(a.lic), `${fmt(a.lic/2)} × 2‑Core‑Packs`, "main") +
+    k("Datacenter Cores", fmt(a.licDC), `${fmt(a.licDC/2)} × 2‑Core‑Packs`) +
+    k("Standard Cores", fmt(a.licSTD), `${fmt(a.licSTD/2)} × 2‑Core‑Packs` + (a.licOTH ? ` · <span class="warn">${fmt(a.licOTH)} andere</span>` : "")) +
+    k("Physische Cores", fmt(a.phys), `${fmt(a.lic - a.phys)} Cores durch Mindestlizenzierung`) +
+    k("Hosts", fmt(a.hosts.length), `${fmt(a.cpus)} CPUs`) +
+    k("Tages-Exporte", `${a.days.length}/${dim}`,
+      missing ? `<span class="${isCurrent ? "muted" : "warn"}">${isCurrent ? "laufender Monat" : missing + " Tage fehlen"}</span>` : "vollständig");
+}
+
+function renderChart(a){
+  const [y, mo] = a.month.split("-").map(Number), dim = daysInMonth(a.month);
+  const byDay = new Map(a.daily.map(x => [x.d, x]));
+  const max = Math.max(a.lic, ...a.daily.map(x => x.lic), 1);
+  const W = 900, H = 220, L = 44, B = 22, T = 22, bw = (W - L) / dim;
+  const yv = v => T + (H - T - B) * (1 - v / max);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lizenzpflichtige Cores pro Tag">`;
+  const step = niceStep(max);
+  for (let v = 0; v <= max; v += step) s += `<line x1="${L}" x2="${W}" y1="${yv(v)}" y2="${yv(v)}"/><text x="${L-6}" y="${yv(v)+3}" text-anchor="end">${fmt(v)}</text>`;
+  for (let i = 1; i <= dim; i++){
+    const d = `${a.month}-${String(i).padStart(2,"0")}`, x = L + (i-1) * bw, e = byDay.get(d);
+    if (e) s += `<rect class="bar${e.lic < a.lic ? " dim" : ""}" x="${x+1}" y="${yv(e.lic)}" width="${Math.max(bw-2,1)}" height="${H-B-yv(e.lic)}"><title>${new Date(y,mo-1,i).toLocaleDateString("de-CH")}: ${fmt(e.lic)} Cores · ${e.n} Hosts</title></rect>`;
+    if (i === 1 || i % 5 === 0) s += `<text x="${x+bw/2}" y="${H-6}" text-anchor="middle">${i}.</text>`;
+  }
+  s += `<line x1="${L}" x2="${W}" y1="${yv(a.lic)}" y2="${yv(a.lic)}" style="stroke:var(--fg);stroke-dasharray:4 3"/>`;
+  s += `<text x="${W-2}" y="${yv(a.lic)-4}" text-anchor="end" style="fill:var(--fg)">Monatswert ${fmt(a.lic)}</text></svg>`;
+  $("#chart").innerHTML = s;
+  $("#chartsub").textContent = `· ${monthLabel(a.month)} · gestrichelt = Summe der Peaks pro Host (Reporting-Wert)`;
+}
+function niceStep(max){ const r = max / 4, p = Math.pow(10, Math.floor(Math.log10(r))); return [1,2,5,10].map(m => m*p).find(s => s >= r); }
+
+const cols = [
+  ["name","Host"],["cluster","Cluster"],["ed","Edition"],["os","Betriebssystem"],
+  ["cpus","CPUs","n"],["cpc","Cores/CPU","n"],["peakPhys","Phys. Cores","n"],["peakLic","SPLA Cores","n"],
+  ["daysSeen","Tage","n"],["state","Status"]
+];
+function renderHosts(a){
+  const {key, dir} = sortState, k = key === "lic" ? "peakLic" : key;
+  const list = [...a.hosts].sort((x, y) => (typeof x[k] === "number" ? x[k] - y[k] : String(x[k]).localeCompare(String(y[k]))) * dir || x.name.localeCompare(y.name));
+  const edTag = e => `<span class="tag ${e === "Datacenter" ? "dc" : e === "Standard" ? "std" : "oth"}">${e}</span>`;
+  let h = `<thead><tr>${cols.map(([c, l, n]) => `<th class="${n||""}" data-k="${c}">${l}${k === c ? (dir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}</tr></thead><tbody>`;
+  for (const x of list){
+    const minNote = x.peakLic > x.peakPhys ? ` <span class="muted" title="Mindestlizenzierung">(min.)</span>` : "";
+    const partial = x.daysSeen < a.days.length ? ` <span class="muted" title="${x.first} – ${x.last}">${x.first.slice(8)}.–${x.last.slice(8)}.</span>` : "";
+    const st = esc(x.state) + (x.notResp ? ` <span class="${/^responding$/i.test(x.state) ? "muted" : "bad"}" title="An ${x.notResp} Tag(en) nicht 'Responding'">(${x.notResp}× n.r.)</span>` : "");
+    h += `<tr><td>${esc(x.name)}</td><td>${esc(x.cluster) || '<span class="muted">Standalone</span>'}</td><td>${edTag(x.ed)}</td><td>${esc(x.os)}</td>
+      <td class="n">${x.cpus}</td><td class="n">${x.cpc}</td><td class="n">${fmt(x.peakPhys)}</td><td class="n"><b>${fmt(x.peakLic)}</b>${minNote}</td>
+      <td class="n">${x.daysSeen}${partial}</td><td>${st}</td></tr>`;
+  }
+  h += `</tbody><tfoot><tr><td colspan="4">Total ${a.hosts.length} Hosts</td><td class="n">${fmt(a.cpus)}</td><td></td><td class="n">${fmt(a.phys)}</td><td class="n">${fmt(a.lic)}</td><td colspan="2"></td></tr></tfoot>`;
+  $("#hosts").innerHTML = h;
+  $("#hostsub").textContent = `· ${monthLabel(a.month)} · Spalten anklicken zum Sortieren`;
+  $("#hosts thead").onclick = e => {
+    const c = e.target.closest("th")?.dataset.k; if (!c) return;
+    const kk = c === "peakLic" ? "lic" : c;
+    sortState = {key:kk, dir: sortState.key === kk ? -sortState.dir : (typeof a.hosts[0]?.[c] === "number" ? -1 : 1)};
+    renderHosts(a);
+  };
+}
+
+function renderMonths(ms, cur){
+  let h = `<thead><tr><th>Monat</th><th class="n">Exporte</th><th class="n">Hosts</th><th class="n">Phys. Cores</th><th class="n">Datacenter</th><th class="n">Standard</th><th class="n">SPLA Cores</th><th class="n">2‑Core‑Packs</th><th class="n">Δ Vormonat</th></tr></thead><tbody>`;
+  const aggs = ms.map(monthAgg);
+  aggs.forEach((a, i) => {
+    const prev = aggs[i+1], d = prev ? a.lic - prev.lic : null;
+    h += `<tr class="click${a.month === cur ? " sel" : ""}" data-m="${a.month}"><td>${monthLabel(a.month)}</td><td class="n">${a.days.length}/${daysInMonth(a.month)}</td><td class="n">${a.hosts.length}</td><td class="n">${fmt(a.phys)}</td>
+      <td class="n">${fmt(a.licDC)}</td><td class="n">${fmt(a.licSTD)}</td><td class="n"><b>${fmt(a.lic)}</b></td><td class="n">${fmt(a.lic/2)}</td>
+      <td class="n ${d > 0 ? "warn" : d < 0 ? "muted" : ""}">${d === null ? "–" : (d > 0 ? "+" : "") + fmt(d)}</td></tr>`;
+  });
+  $("#months").innerHTML = h + "</tbody>";
+  $("#months tbody").onclick = e => { const m = e.target.closest("tr")?.dataset.m; if (m){ $("#month").value = m; render(); scrollTo({top:0, behavior:"smooth"}); } };
+}
+
+function exportCSV(){
+  const m = $("#month").value; if (!m) return;
+  const a = monthAgg(m), q = v => `"${String(v).replace(/"/g,'""')}"`;
+  const lines = [["Monat","Host","Cluster","Edition","OperatingSystem","CPUs","CoresPerCPU","PhysCores","SPLACores","CorePacks2","TageGesehen","ErsterTag","LetzterTag"].map(q).join(";")];
+  a.hosts.sort((x, y) => x.name.localeCompare(y.name)).forEach(h => lines.push([m,h.name,h.cluster,h.ed,h.os,h.cpus,h.cpc,h.peakPhys,h.peakLic,h.peakLic/2,h.daysSeen,h.first,h.last].map(q).join(";")));
+  lines.push(["TOTAL","","","Datacenter","",a.cpus,"",a.phys,a.licDC,a.licDC/2,"","",""].map(q).join(";"));
+  lines.push(["TOTAL","","","Standard","","","","",a.licSTD,a.licSTD/2,"","",""].map(q).join(";"));
+  lines.push(["TOTAL","","","Alle","","","","",a.lic,a.lic/2,"","",""].map(q).join(";"));
+  const blob = new Blob(["﻿" + lines.join("\r\n")], {type:"text/csv"});
+  const link = Object.assign(document.createElement("a"), {href: URL.createObjectURL(blob), download: `SPLA_Report_${m}.csv`});
+  link.click(); URL.revokeObjectURL(link.href);
+}
+
+/* ---------- Events ---------- */
+$("#month").onchange = render;
+$("#reload").onclick = loadFromServer;
+$("#exp").onclick = exportCSV;
+$("#pick").onclick = () => $("#file").click();
+$("#file").onchange = e => loadLocal(e.target.files);
+const drop = $("#drop");
+drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", e => { if (e.target === drop) drop.classList.remove("over"); });
+drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); loadLocal(e.dataTransfer.files); });
+loadFromServer();
+</script>
+</body>
+</html>
