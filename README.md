@@ -7,8 +7,12 @@ SPLA-Reporting-Dashboard für Hyper-V/VMM-Hosts (Windows Server, Core-Lizenzieru
 ```
 index.html                             <- die Website (eine Datei, keine externen Abhängigkeiten)
 report/
-  VMMHostExport_<NAME>_JJJJMMTT.csv    <- ein Export pro Tag (hier: Dummy-Daten Sep–Nov 2026)
+  VMMHostExport_PROD_JJJJMMTT.csv      <- pro Tag ein Export je Umgebung
+  VMMHostExport_TEST_JJJJMMTT.csv         (hier: Dummy-Daten Sep–Nov 2026)
 ```
+
+Die Umgebung wird aus dem Dateinamen gelesen (der Teil vor dem Datum). Weitere Umgebungen
+werden automatisch erkannt.
 
 Die täglichen CSV-Exporte landen automatisch im Unterordner `report/`
 (anpassbar über `CSV_DIR` in `index.html`).
@@ -33,4 +37,6 @@ Beim Öffnen liest das Dashboard die CSVs automatisch ein, sofern möglich:
 * Physische Cores = `PhysicalCPUCount × CoresPerCPU` (Hyperthreading zählt nicht)
 * Mindestens 8 Cores pro CPU und 16 Cores pro Server, in 2-Core-Packs
 * Monatswert pro Host = Peak aller Tages-Exporte im Monat; Summe über alle Hosts = SPLA Cores
+* **Total = PROD + TEST**; Aufteilung nach Umgebung und Edition wird überall mit angezeigt
+* Fehlende Tages-Exporte werden pro Umgebung angezeigt
 * Getrennt nach Edition (Datacenter / Standard), Export des Monatsreports als CSV

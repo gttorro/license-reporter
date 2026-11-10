@@ -8,21 +8,24 @@
 :root{
   color-scheme:light;
   --bg:#f2f4f8;--surface:#fff;--surface2:#f7f8fb;--text:#0f1726;--text2:#4f5b70;--muted:#8a94a6;--line:#e3e7ee;
-  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s1soft:#2a78d61f;--s4:#6250d6;
+  --s1:#2a78d6;--s2:#eb6834;--s0:#8a94a6;--s1soft:#2a78d61f;     /* Editionen: Datacenter, Standard, Andere */
+  --e1:#6250d6;--e2:#1baf7a;--e3:#eda100;                         /* Umgebungen: PROD, TEST, weitere */
   --good:#1f9d55;--warn:#c98500;--crit:#d64545;
-  --hero1:#163d82;--hero2:#4b37b8;--heroText:#fff;
+  --hero1:#163d82;--hero2:#4b37b8;
   --shadow:0 1px 2px #0f17260d,0 4px 16px #0f17260a;
 }
 @media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){
   color-scheme:dark;
   --bg:#0d1117;--surface:#161b23;--surface2:#1c222c;--text:#eef1f6;--text2:#b4bccb;--muted:#7d8799;--line:#2a313d;
-  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s1soft:#3987e526;--s4:#9085e9;
+  --s1:#3987e5;--s2:#d95926;--s0:#7d8799;--s1soft:#3987e526;
+  --e1:#9085e9;--e2:#199e70;--e3:#c98500;
   --good:#3fbf74;--warn:#e0a640;--crit:#e66767;
   --hero1:#10295a;--hero2:#33237f;--shadow:0 1px 2px #0006,0 4px 16px #0004;}}
 :root[data-theme="dark"]{
   color-scheme:dark;
   --bg:#0d1117;--surface:#161b23;--surface2:#1c222c;--text:#eef1f6;--text2:#b4bccb;--muted:#7d8799;--line:#2a313d;
-  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s1soft:#3987e526;--s4:#9085e9;
+  --s1:#3987e5;--s2:#d95926;--s0:#7d8799;--s1soft:#3987e526;
+  --e1:#9085e9;--e2:#199e70;--e3:#c98500;
   --good:#3fbf74;--warn:#e0a640;--crit:#e66767;
   --hero1:#10295a;--hero2:#33237f;--shadow:0 1px 2px #0006,0 4px 16px #0004;}
 *{box-sizing:border-box}
@@ -32,7 +35,7 @@ button,select,input{font:inherit;color:inherit}
 .num{font-variant-numeric:tabular-nums}
 
 /* ---------- Hero ---------- */
-.hero{background:radial-gradient(1200px 400px at 85% -10%,#ffffff22,transparent 60%),linear-gradient(120deg,var(--hero1),var(--hero2));color:var(--heroText);padding:18px 0 72px}
+.hero{background:radial-gradient(1200px 400px at 85% -10%,#ffffff22,transparent 60%),linear-gradient(120deg,var(--hero1),var(--hero2));color:#fff;padding:18px 0 72px}
 .top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
 .brand{display:flex;gap:12px;align-items:center}
 .logo{width:40px;height:40px;border-radius:11px;background:#ffffff1f;display:grid;place-items:center;border:1px solid #ffffff30}
@@ -52,26 +55,32 @@ button,select,input{font:inherit;color:inherit}
 .big b{font-size:clamp(48px,8vw,76px);font-weight:700;letter-spacing:-.03em;line-height:1}
 .big span{font-size:20px;opacity:.8}
 .hero-sub{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:14px;opacity:.95}
+.hero-env{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.henv{display:inline-flex;align-items:center;gap:8px;background:#ffffff1a;border:1px solid #ffffff2e;border-radius:10px;padding:5px 12px;font-size:13px}
+.henv i{width:9px;height:9px;border-radius:50%;box-shadow:0 0 0 2px #ffffff55}
+.henv b{font-size:15px}
 .pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:600;background:#ffffff26}
 .spark{min-width:260px;flex:0 1 380px}
 .spark svg{width:100%;height:auto;display:block}
 .spark .lbl{fill:#ffffffb3;font-size:10px}
 .spark .val{fill:#fff;font-size:10px;font-weight:600}
-.spark rect{cursor:pointer;transition:opacity .15s}
+.spark g{cursor:pointer}
 .spark-cap{font-size:12px;opacity:.75;margin-bottom:6px}
 
-/* ---------- Content ---------- */
+/* ---------- Inhalt ---------- */
 main.wrap{margin-top:-48px;display:grid;gap:16px;padding-bottom:28px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);min-width:0}
 .card h2{font-size:15px;margin:0;display:flex;align-items:center;gap:8px}
 .card .sub{color:var(--muted);font-size:12.5px;margin:2px 0 14px}
+.card h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 4px;font-weight:600}
 .chead{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;justify-content:space-between}
 .notice{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:12px;padding:12px 16px;box-shadow:var(--shadow);color:var(--text2)}
 .notice[hidden]{display:none}
 
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
 .kpi{display:flex;gap:14px;align-items:flex-start}
-.ico{flex:none;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--c-soft,var(--s1soft));color:var(--c,var(--s1))}
+.kpi.env{border-top:3px solid var(--c)}
+.ico{flex:none;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c)}
 .ico svg{width:22px;height:22px}
 .kpi .l{color:var(--text2);font-size:12.5px}
 .kpi .v{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
@@ -83,27 +92,33 @@ main.wrap{margin-top:-48px;display:grid;gap:16px;padding-bottom:28px}
 @media (max-width:900px){.grid2{grid-template-columns:1fr}}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--text2)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-#chart{position:relative}
+.legend i.round{border-radius:50%}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:2px}
+.seg button{border:0;background:transparent;border-radius:7px;padding:4px 12px;cursor:pointer;color:var(--text2);font-size:12.5px}
+.seg button.on{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 1px 3px #0f172622}
+.seg button i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+#chart{position:relative;margin-top:10px}
 #chart svg{width:100%;height:auto;display:block;overflow:visible}
 #chart .grid{stroke:var(--line)}
 #chart .ax{fill:var(--muted);font-size:11px}
 #chart .hit{fill:transparent;cursor:crosshair}
 #chart .hit:hover{fill:var(--s1soft)}
+#chart .gapmark{fill:var(--warn);font-size:11px;font-weight:700}
 #chart .peak{stroke:var(--text);stroke-dasharray:5 4;stroke-width:1.5;opacity:.7}
 #chart .peaklbl{fill:var(--text);font-size:11.5px;font-weight:600}
 
 .clist{display:grid;gap:12px}
-.crow .top2{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.crow .top2{display:flex;justify-content:space-between;gap:8px;font-size:13px;align-items:center}
 .crow .top2 span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .crow .meta{color:var(--muted);font-size:11.5px}
-.track{height:8px;border-radius:4px;background:var(--surface2);overflow:hidden;margin-top:5px;display:flex;gap:2px}
+.track{height:8px;border-radius:4px;overflow:hidden;margin-top:5px;display:flex;gap:2px}
 .track b{display:block;height:100%;border-radius:4px}
 .split{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;margin:6px 0 4px}
 .split b{display:block;height:100%}
 
-.tools{display:flex;gap:8px;align-items:center}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .search{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:6px 10px;color:var(--muted)}
-.search input{border:0;outline:0;background:transparent;width:180px;color:var(--text)}
+.search input{border:0;outline:0;background:transparent;width:170px;color:var(--text)}
 .tbl{overflow-x:auto;margin:0 -20px;padding:0 20px}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
@@ -113,20 +128,27 @@ td.n,th.n{text-align:right}
 tbody tr{transition:background .1s}
 tbody tr:hover{background:var(--surface2)}
 tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--line)}
+tfoot tr.subt td{font-weight:500;color:var(--text2);border-top:0;padding-top:3px;padding-bottom:3px}
 tr.sel{background:var(--s1soft)!important}
 tr.click{cursor:pointer}
 .host b{font-weight:600}
-.host small{display:block;color:var(--muted);font-size:11.5px}
+.host small{display:block;color:var(--muted);font-size:11.5px;margin-left:16px}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px;background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 20%,transparent)}
 .dot.warn{background:var(--warn);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn) 20%,transparent)}
 .dot.crit{background:var(--crit);box-shadow:0 0 0 3px color-mix(in srgb,var(--crit) 20%,transparent)}
 .tag{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:999px;font-size:12px;background:var(--surface2);border:1px solid var(--line);color:var(--text2)}
 .tag i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.etag{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:6px;font-size:11.5px;font-weight:700;letter-spacing:.03em;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent)}
+.etag i{width:7px;height:7px;border-radius:50%;background:var(--c)}
 .cl{color:var(--text2)}
 .barcell{display:flex;align-items:center;gap:10px;justify-content:flex-end}
-.minibar{width:90px;height:6px;border-radius:3px;background:var(--surface2);overflow:hidden}
-.minibar b{display:block;height:100%;background:var(--s1);border-radius:3px}
+.minibar{width:90px;height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;display:flex;gap:1px}
+.minibar b{display:block;height:100%;background:var(--s1)}
 .minnote{color:var(--warn);font-size:11px;font-weight:600}
+.cov{display:inline-flex;gap:8px;white-space:nowrap}
+.cov span{display:inline-flex;align-items:center;gap:4px}
+.cov i{width:7px;height:7px;border-radius:50%}
+.cov .bad{color:var(--warn);font-weight:600}
 .badge{display:inline-block;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:600}
 .badge.up{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
 .badge.down{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
@@ -141,16 +163,17 @@ code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;p
 #files{color:var(--muted);font-size:12px;word-break:break-all}
 footer{color:var(--muted);font-size:12px;padding:0 0 32px}
 
-.tip{position:fixed;pointer-events:none;z-index:10;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 8px 28px #0f172633;font-size:12.5px;min-width:180px;opacity:0;transition:opacity .1s}
+.tip{position:fixed;pointer-events:none;z-index:10;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 8px 28px #0f172633;font-size:12.5px;min-width:200px;opacity:0;transition:opacity .1s}
 .tip.on{opacity:1}
 .tip .t{font-weight:600;margin-bottom:6px}
 .tip .r{display:flex;justify-content:space-between;gap:16px}
 .tip .r span:first-child{color:var(--text2)}
+.tip .h{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin:6px 0 2px}
 .tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.tip i.round{border-radius:50%}
 
-body.empty .hero-main,body.empty main>section:not(#welcome),body.empty footer{display:none}
+body.empty .hero-main,body.empty main>section:not(#welcome),body.empty footer,body.empty #exp{display:none}
 body.empty .hero{padding-bottom:80px}
-body.empty #exp{display:none}
 .welcome{text-align:center;padding:44px 24px}
 .welcome .wico{width:64px;height:64px;border-radius:18px;margin:0 auto 14px;display:grid;place-items:center;background:var(--s1soft);color:var(--s1)}
 .welcome h2{justify-content:center;font-size:20px;margin-bottom:6px}
@@ -185,8 +208,9 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
         <div class="eyebrow" id="eyebrow">Zu meldende Cores</div>
         <div class="big"><b class="num" id="heroNum">–</b><span>Cores</span></div>
         <div class="hero-sub" id="heroSub"></div>
+        <div class="hero-env" id="heroEnv"></div>
       </div>
-      <div class="spark"><div class="spark-cap">SPLA Cores pro Monat</div><div id="spark"></div></div>
+      <div class="spark"><div class="spark-cap">SPLA Cores pro Monat (alle Umgebungen)</div><div id="spark"></div></div>
     </div>
   </div>
 </header>
@@ -199,22 +223,27 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
   <section class="grid2">
     <div class="card">
       <div class="chead">
-        <div><h2>Lizenzpflichtige Cores pro Tag</h2><div class="sub" id="chartsub"></div></div>
-        <div class="legend"><span><i style="background:var(--s1)"></i>Datacenter</span><span><i style="background:var(--s2)"></i>Standard</span><span id="lgOth" hidden><i style="background:var(--s3)"></i>Andere</span></div>
+        <div><h2>Lizenzpflichtige Cores pro Tag</h2><div class="sub" id="chartsub" style="margin-bottom:0"></div></div>
+        <div class="seg" id="chartMode"><button data-v="env" class="on">nach Umgebung</button><button data-v="ed">nach Edition</button></div>
       </div>
+      <div class="legend" id="chartLegend" style="margin-top:10px"></div>
       <div id="chart"></div>
     </div>
     <div class="card">
-      <h2>Verteilung</h2><div class="sub">SPLA Cores nach Edition und Cluster</div>
+      <h2>Verteilung</h2><div class="sub" style="margin-bottom:0">SPLA Cores des Monats (Peak pro Host)</div>
       <div id="split"></div>
-      <div class="clist" id="clusters" style="margin-top:18px"></div>
+      <h3>Cluster</h3>
+      <div class="clist" id="clusters"></div>
     </div>
   </section>
 
   <section class="card">
     <div class="chead">
       <div><h2>Hosts</h2><div class="sub" id="hostsub"></div></div>
-      <div class="tools"><label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Host, Cluster, OS…" type="search"></label></div>
+      <div class="tools">
+        <div class="seg" id="envFilter"></div>
+        <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Host, Cluster, OS…" type="search"></label>
+      </div>
     </div>
     <div class="tbl"><table id="hosts"></table></div>
   </section>
@@ -228,12 +257,13 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
     <details>
       <summary>Berechnungsregeln &amp; Datenquelle</summary>
       <ul>
+        <li>Pro Tag kommt je Umgebung ein Export. Die Umgebung steht im Dateinamen vor dem Datum: <code>VMMHostExport_PROD_JJJJMMTT.csv</code>, <code>VMMHostExport_TEST_JJJJMMTT.csv</code>.</li>
         <li>Pro Host zählen alle physischen Cores (<code>PhysicalCPUCount × CoresPerCPU</code>); Hyperthreading zählt nicht.</li>
         <li>Mindestlizenzierung Windows Server: 8 Cores pro Prozessor, 16 Cores pro Server, in 2‑Core‑Packs.</li>
         <li>Monatswert pro Host = Höchststand aller Tages-Exporte im Monat. Ein Host zählt, sobald er an einem Tag auftaucht.</li>
+        <li><b>Total = Summe aller Umgebungen</b> (PROD + TEST). Die Aufteilung nach Umgebung und Edition ist zur Kontrolle.</li>
         <li>Edition aus <code>OperatingSystem</code> (Datacenter / Standard), massgebend ist der letzte Tag im Monat.</li>
-        <li>Datum aus dem Dateinamen (<code>…_JJJJMMTT.csv</code>). Mehrere Dateien am selben Tag: die letzte gewinnt.</li>
-        <li>Datenquelle: der Unterordner <code>report/</code> mit den CSV-Exporten. Beim Start automatisch über die Verzeichnisliste des Webservers oder den im Browser gemerkten Ordner (Edge/Chrome), sonst über „Ordner wählen“ oder Drag &amp; Drop.</li>
+        <li>Datenquelle: der Unterordner <code>report/</code>. Beim Start automatisch über die Verzeichnisliste des Webservers oder den im Browser gemerkten Ordner (Edge/Chrome), sonst über „Ordner wählen“ oder Drag &amp; Drop.</li>
       </ul>
       <div id="files"></div>
     </details>
@@ -247,10 +277,15 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
 const $ = s => document.querySelector(s);
 const fmt = n => Math.round(n).toLocaleString("de-CH");
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const ED = {Datacenter:"var(--s1)", Standard:"var(--s2)", Andere:"var(--s3)"};
-let days = new Map();            // "YYYY-MM-DD" -> {file, hosts}
+const EDS = ["Datacenter","Standard","Andere"];
+const ED = {Datacenter:"var(--s1)", Standard:"var(--s2)", Andere:"var(--s0)"};
+const ENV_COL = {PROD:"var(--e1)", TEST:"var(--e2)"};
+const envColor = e => ENV_COL[e] || "var(--e3)";
+const envOrder = e => ({PROD:0, TEST:1}[e] ?? 2);
+
+let exportsMap = new Map();      // "ENV|JJJJ-MM-TT" -> {env, date, file, hosts}
 let sources = new Set();
-let curMonth = null, sortState = {key:"peakLic", dir:-1}, query = "";
+let curMonth = null, sortState = {key:"peakLic", dir:-1}, query = "", envFilter = "ALLE", chartMode = "env";
 
 /* ================= CSV ================= */
 function parseCSV(text){
@@ -278,33 +313,37 @@ function licCores(cpus, cpc){
   if (!cpus || !cpc) return 0;
   return Math.ceil(Math.max(cpus * Math.max(cpc, 8), 16) / 2) * 2;
 }
-function toHost(r){
+function toHost(r, env){
   const cpus = parseInt(r.PhysicalCPUCount) || 0, cpc = parseInt(r.CoresPerCPU) || 0, os = r.OperatingSystem || "";
-  return {name:(r.ComputerName || "").toUpperCase(), cluster:r.HostCluster || "", cpus, cpc, phys:cpus*cpc,
+  return {env, name:(r.ComputerName || "").toUpperCase(), cluster:r.HostCluster || "", cpus, cpc, phys:cpus*cpc,
     lic:licCores(cpus, cpc), os, ed:edition(os), desc:r.Description || "", state:r.ComputerState || ""};
 }
-function dateFromName(name){
-  const m = name.match(/(20\d{2})[-_]?(\d{2})[-_]?(\d{2})(?!.*\d{8})/);
-  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+// "VMMHostExport_PROD_20261014.csv" -> {env:"PROD", date:"2026-10-14"}
+function parseName(name){
+  const parts = name.replace(/\.csv$/i, "").split(/[_\s]+/);
+  const i = parts.findLastIndex(p => /^20\d{6}$/.test(p.replace(/-/g, "")));
+  if (i < 0) return {env:"UNBEKANNT", date:null};
+  const d = parts[i].replace(/-/g, "");
+  return {env: i >= 2 ? parts[i-1].toUpperCase() : "UNBEKANNT", date:`${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`};
 }
 function addFile(name, text, lastMod){
-  let d = dateFromName(name);
-  if (!d && lastMod) d = new Date(lastMod).toISOString().slice(0,10);
-  if (!d) return false;
+  let {env, date} = parseName(name);
+  if (!date && lastMod) date = new Date(lastMod).toISOString().slice(0,10);
+  if (!date) return false;
   const uniq = new Map();
-  parseCSV(text).filter(r => r.ComputerName).map(toHost).forEach(h => uniq.set(h.name, h));
-  days.set(d, {file:name, hosts:[...uniq.values()]});
+  parseCSV(text).filter(r => r.ComputerName).map(r => toHost(r, env)).forEach(h => uniq.set(h.name, h));
+  exportsMap.set(`${env}|${date}`, {env, date, file:name, hosts:[...uniq.values()]});
   return true;
 }
 
 /* ================= Laden ================= */
 // Reihenfolge beim Start:
-//   1) Verzeichnisliste des Webservers (IIS "Verzeichnis durchsuchen", Apache/nginx autoindex)
+//   1) Verzeichnisliste des Webservers für CSV_DIR (IIS "Verzeichnis durchsuchen", Apache/nginx autoindex)
 //   2) im Browser gemerkter Ordner (File System Access API, Edge/Chrome) – auch per Doppelklick (file://)
 //   3) sonst Startkarte mit "Ordner wählen" bzw. Drag & Drop
+const CSV_DIR = "report/";   // Unterordner mit den täglichen CSV-Exporten (relativ zu dieser Seite)
 const canPick = "showDirectoryPicker" in window;
 const isHttp = location.protocol.startsWith("http");
-const CSV_DIR = "report/";   // Unterordner mit den täglichen CSV-Exporten (relativ zu dieser Seite)
 let dirHandle = null;
 
 function kv(mode, fn){
@@ -350,11 +389,10 @@ async function readDir(h){
     }
   return n;
 }
-const reset = () => { days.clear(); sources.clear(); };
+const reset = () => { exportsMap.clear(); sources.clear(); };
 const dirLabel = h => `Ordner „${h.name}“`;
 function done(src){ if (src) sources.add(src); render(); }
 
-// Beim Start: alles einlesen, was ohne Klick möglich ist
 async function init(){
   reset();
   if (isHttp){ try{ if (await loadListing()) return done("Webserver-Verzeichnis"); }catch(e){ console.warn(e); } }
@@ -366,7 +404,6 @@ async function init(){
   }
   render();
 }
-// Button "Neu einlesen": der Klick erlaubt dem Browser den erneuten Ordnerzugriff
 async function reread(){
   if (dirHandle){
     try{
@@ -376,7 +413,6 @@ async function reread(){
   if (isHttp){ try{ reset(); if (await loadListing()) return done("Webserver-Verzeichnis"); }catch(e){ console.warn(e); } }
   pickFolder();
 }
-// Button "Ordner wählen": Edge/Chrome merken sich den Ordner, andere Browser fragen jedes Mal
 async function pickFolder(){
   if (!canPick) return $("#dir").click();
   try{
@@ -402,7 +438,7 @@ function renderWelcome(){
     <h2>${known ? "Daten neu einlesen" : "CSV-Ordner verbinden"}</h2>
     <p>${known
       ? `Der Browser braucht deine Bestätigung, um den Ordner <b>„${esc(dirHandle.name)}“</b> erneut zu lesen.`
-      : "Wähle den Ordner, in dem die täglichen VMM-Exporte landen (normalerweise <code>report</code>)."}</p>
+      : "Wähle den Ordner, in dem die täglichen VMM-Exporte (PROD und TEST) landen – normalerweise <code>report</code>."}</p>
     <button class="bigbtn" id="wbtn">${known ? `„${esc(dirHandle.name)}“ einlesen` : "Ordner wählen"}</button>
     <p class="small">${canPick
       ? (known ? `<button class="linkbtn" id="wother">Anderen Ordner wählen</button> · ` : "") + "Der Browser merkt sich den Ordner und liest ihn bei den nächsten Starts automatisch ein (bzw. mit einem Klick)."
@@ -413,45 +449,57 @@ function renderWelcome(){
 }
 
 /* ================= Auswertung ================= */
-const monthsList = () => [...new Set([...days.keys()].map(d => d.slice(0,7)))].sort();
+const allExports = () => [...exportsMap.values()];
+const envsList = () => [...new Set(allExports().map(e => e.env))].sort((a, b) => envOrder(a) - envOrder(b) || a.localeCompare(b));
+const monthsList = () => [...new Set(allExports().map(e => e.date.slice(0,7)))].sort();
 const monthLabel = (m, opt = {month:"long", year:"numeric"}) => { const [y, mo] = m.split("-"); return new Date(y, mo-1, 1).toLocaleDateString("de-CH", opt); };
 const daysInMonth = m => { const [y, mo] = m.split("-").map(Number); return new Date(y, mo, 0).getDate(); };
 const isOk = s => /^responding$/i.test(s);
+const zero = keys => Object.fromEntries(keys.map(k => [k, 0]));
 
 const aggCache = new Map();
 function monthAgg(month){
   if (aggCache.has(month)) return aggCache.get(month);
-  const dl = [...days.keys()].filter(d => d.startsWith(month)).sort();
-  const hosts = new Map();
-  const daily = dl.map(d => {
-    const e = {d, Datacenter:0, Standard:0, Andere:0, total:0, n:0};
-    for (const h of days.get(d).hosts){
-      e[h.ed] += h.lic; e.total += h.lic; e.n++;
-      let a = hosts.get(h.name);
-      if (!a){ a = {...h, peakLic:0, peakPhys:0, daysSeen:0, first:d, notResp:0}; hosts.set(h.name, a); }
-      Object.assign(a, {cluster:h.cluster || a.cluster, os:h.os, ed:h.ed, desc:h.desc, state:h.state, cpus:h.cpus, cpc:h.cpc, last:d});
+  const envs = envsList();
+  const ex = allExports().filter(e => e.date.startsWith(month)).sort((a, b) => a.date.localeCompare(b.date));
+  const dates = [...new Set(ex.map(e => e.date))].sort();
+  const hosts = new Map(), byDate = new Map(dates.map(d => [d, {d, env:zero(envs), ed:zero(EDS), total:0, n:0, have:[]}]));
+  const cov = zero(envs);
+  for (const e of ex){
+    const day = byDate.get(e.date); day.have.push(e.env); cov[e.env]++;
+    for (const h of e.hosts){
+      day.env[h.env] += h.lic; day.ed[h.ed] += h.lic; day.total += h.lic; day.n++;
+      const key = h.env + "|" + h.name;
+      let a = hosts.get(key);
+      if (!a){ a = {...h, peakLic:0, peakPhys:0, daysSeen:0, first:e.date, notResp:0}; hosts.set(key, a); }
+      Object.assign(a, {cluster:h.cluster || a.cluster, os:h.os, ed:h.ed, desc:h.desc, state:h.state, cpus:h.cpus, cpc:h.cpc, last:e.date});
       a.peakLic = Math.max(a.peakLic, h.lic); a.peakPhys = Math.max(a.peakPhys, h.phys);
       a.daysSeen++; if (!isOk(h.state)) a.notResp++;
     }
-    return e;
-  });
+  }
   const list = [...hosts.values()];
-  const sum = (f, ed) => list.filter(h => !ed || h.ed === ed).reduce((s, h) => s + f(h), 0);
-  const a = {month, days:dl, daily, hosts:list, lic:sum(h => h.peakLic), phys:sum(h => h.peakPhys), cpus:sum(h => h.cpus),
-    ed:{Datacenter:sum(h => h.peakLic, "Datacenter"), Standard:sum(h => h.peakLic, "Standard"), Andere:sum(h => h.peakLic, "Andere")}};
+  const sum = (f, pred = () => true) => list.filter(pred).reduce((s, h) => s + f(h), 0);
+  const a = {month, envs, dates, daily:[...byDate.values()], hosts:list, cov,
+    lic:sum(h => h.peakLic), phys:sum(h => h.peakPhys), cpus:sum(h => h.cpus),
+    ed:Object.fromEntries(EDS.map(k => [k, sum(h => h.peakLic, h => h.ed === k)])),
+    env:Object.fromEntries(envs.map(k => [k, sum(h => h.peakLic, h => h.env === k)])),
+    envHosts:Object.fromEntries(envs.map(k => [k, list.filter(h => h.env === k).length])),
+    envPhys:Object.fromEntries(envs.map(k => [k, sum(h => h.peakPhys, h => h.env === k)]))};
   aggCache.set(month, a);
   return a;
 }
 
 /* ================= Rendering ================= */
+const etag = e => `<span class="etag" style="--c:${envColor(e)}"><i></i>${esc(e)}</span>`;
 function render(){
   aggCache.clear();
   const ms = monthsList();
   document.body.classList.toggle("empty", !ms.length);
   $("#welcome").hidden = !!ms.length;
-  if (!ms.length){ renderWelcome(); ["#chips","#spark","#kpis","#chart","#split","#clusters","#hosts","#months","#files","#foot","#heroSub"].forEach(s => $(s).innerHTML = ""); $("#heroNum").textContent = "–"; return; }
+  if (!ms.length){ renderWelcome(); ["#chips","#spark","#kpis","#chart","#split","#clusters","#hosts","#months","#files","#foot","#heroSub","#heroEnv"].forEach(s => $(s).innerHTML = ""); $("#heroNum").textContent = "–"; return; }
   if (!ms.includes(curMonth)) curMonth = ms[ms.length-1];
   const a = monthAgg(curMonth), prev = ms.indexOf(curMonth) > 0 ? monthAgg(ms[ms.indexOf(curMonth)-1]) : null;
+  if (envFilter !== "ALLE" && !a.envs.includes(envFilter)) envFilter = "ALLE";
   $("#chips").innerHTML = ms.slice().reverse().map(m => `<button class="chip${m === curMonth ? " on" : ""}" data-m="${m}">${monthLabel(m)}</button>`).join("");
   renderHero(a, prev, ms); renderKPIs(a); renderChart(a); renderSplit(a); renderHosts(a); renderMonths(ms);
   renderFooter(); checkFreshness();
@@ -472,10 +520,10 @@ function deltaBadge(d, light){
 }
 function renderHero(a, prev, ms){
   const running = a.month === new Date().toISOString().slice(0,7);
-  $("#eyebrow").textContent = `Zu meldende Windows-Server-Cores · ${monthLabel(a.month)}${running ? " (laufend)" : ""}`;
+  $("#eyebrow").textContent = `Zu meldende Windows-Server-Cores · ${a.envs.join(" + ")} · ${monthLabel(a.month)}${running ? " (laufend)" : ""}`;
   countUp($("#heroNum"), a.lic);
   $("#heroSub").innerHTML = `<span>${fmt(a.lic/2)} × 2‑Core‑Packs</span>${deltaBadge(prev ? a.lic - prev.lic : null, true)}`;
-  // Sparkline: letzte 12 Monate
+  $("#heroEnv").innerHTML = a.envs.map(e => `<span class="henv"><i style="background:${envColor(e)}"></i>${esc(e)} <b class="num">${fmt(a.env[e])}</b></span>`).join("");
   const last = ms.slice(-12), vals = last.map(m => monthAgg(m).lic), max = Math.max(...vals, 1);
   const W = 380, H = 96, gap = 6, bw = Math.min(40, (W - gap * (last.length - 1)) / last.length), x0 = W - (bw + gap) * last.length + gap;
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="SPLA Cores pro Monat">`;
@@ -489,23 +537,30 @@ function renderHero(a, prev, ms){
 }
 
 const ICON = {
+  env:'<rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/>',
   dc:'<path d="M4 5h16v5H4zM4 14h16v5H4z"/><path d="M8 7.5h.01M8 16.5h.01"/>',
   std:'<rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/>',
-  cpu:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M10 2v4M14 2v4M10 18v4M14 18v4M2 10h4M2 14h4M18 10h4M18 14h4"/>',
-  host:'<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5l2.5 8M16 7.5l-2.5 8M8.5 6h7"/>'
+  cpu:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M10 2v4M14 2v4M10 18v4M14 18v4M2 10h4M2 14h4M18 10h4M18 14h4"/>'
 };
 function renderKPIs(a){
-  const dim = daysInMonth(a.month), cov = a.days.length / dim, running = a.month === new Date().toISOString().slice(0,7);
-  const k = (icon, c, l, v, s) => `<div class="card kpi"><div class="ico" style="--c:${c};--c-soft:color-mix(in srgb,${c} 14%,transparent)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[icon]}</svg></div><div><div class="l">${l}</div><div class="v num">${v}</div><div class="s">${s}</div></div></div>`;
-  const C = 2 * Math.PI * 18, ringCol = cov >= 1 ? "var(--good)" : running ? "var(--s1)" : "var(--warn)";
+  const dim = daysInMonth(a.month), running = a.month === new Date().toISOString().slice(0,7);
+  const svg = i => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[i]}</svg>`;
+  const k = (icon, c, l, v, s, cls = "") => `<div class="card kpi ${cls}" style="--c:${c}"><div class="ico">${svg(icon)}</div><div><div class="l">${l}</div><div class="v num">${v}</div><div class="s">${s}</div></div></div>`;
+  // Abdeckung: erwartet = Tage bis heute (laufender Monat) bzw. alle Tage
+  const expected = running ? new Date().getDate() : dim;
+  const minCov = Math.min(...a.envs.map(e => a.cov[e])), cov = minCov / dim, C = 2 * Math.PI * 18;
+  const ringCol = minCov >= dim ? "var(--good)" : minCov >= expected ? "var(--s1)" : "var(--warn)";
   $("#kpis").innerHTML =
-    k("dc", "var(--s1)", "Datacenter", fmt(a.ed.Datacenter), `${fmt(a.ed.Datacenter/2)} × 2‑Core‑Packs`) +
-    k("std", "var(--s2)", "Standard", fmt(a.ed.Standard), `${fmt(a.ed.Standard/2)} × 2‑Core‑Packs` + (a.ed.Andere ? ` · ${fmt(a.ed.Andere)} andere` : "")) +
-    k("cpu", "var(--s4)", "Physische Cores", fmt(a.phys), a.lic > a.phys ? `+${fmt(a.lic - a.phys)} durch Mindestlizenzierung` : "keine Mindestlizenz-Aufschläge") +
-    k("host", "var(--good)", "Hosts", fmt(a.hosts.length), `${fmt(a.cpus)} Prozessoren`) +
+    a.envs.map(e => k("env", envColor(e), esc(e), fmt(a.env[e]),
+      `${a.envHosts[e]} Hosts · ${a.lic ? Math.round(a.env[e]/a.lic*100) : 0}% vom Total`, "env")).join("") +
+    k("dc", "var(--s1)", "Datacenter", fmt(a.ed.Datacenter), `${fmt(a.ed.Datacenter/2)} Packs`) +
+    k("std", "var(--s2)", "Standard", fmt(a.ed.Standard), `${fmt(a.ed.Standard/2)} Packs` + (a.ed.Andere ? ` · ${fmt(a.ed.Andere)} andere` : "")) +
+    k("cpu", "var(--text2)", "Physische Cores", fmt(a.phys), a.lic > a.phys ? `+${fmt(a.lic - a.phys)} Mindestlizenz` : "ohne Aufschlag") +
     `<div class="card kpi"><svg class="ring" width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" stroke="var(--surface2)"/><circle cx="22" cy="22" r="18" stroke="${ringCol}" stroke-linecap="round" stroke-dasharray="${C*cov} ${C}" transform="rotate(-90 22 22)"/></svg>
-      <div><div class="l">Tages-Exporte</div><div class="v num">${a.days.length}<span class="muted" style="font-size:16px;font-weight:500"> / ${dim}</span></div>
-      <div class="s">${cov >= 1 ? "vollständig" : running ? "laufender Monat" : `<span style="color:var(--warn)">${dim - a.days.length} Tage fehlen</span>`}</div></div></div>`;
+      <div><div class="l">Tages-Exporte</div>
+      <div class="cov num" style="font-size:15px;font-weight:600;margin:3px 0">${a.envs.map(e => `<span class="${a.cov[e] < expected ? "bad" : ""}"><i style="background:${envColor(e)}"></i>${a.cov[e]}</span>`).join("")}<span class="muted" style="font-weight:400">/ ${dim}</span></div>
+      <div class="s">${a.envs.every(e => a.cov[e] >= dim) ? "vollständig" : a.envs.every(e => a.cov[e] >= expected) ? "laufender Monat, bisher vollständig"
+        : `<span style="color:var(--warn)">fehlt: ${a.envs.filter(e => a.cov[e] < expected).map(e => `${esc(e)} ${expected - a.cov[e]}×`).join(", ")}</span>`}</div></div></div>`;
 }
 
 function niceStep(max){ const r = max / 4, p = Math.pow(10, Math.floor(Math.log10(r))); return [1,2,5,10].map(m => m*p).find(s => s >= r); }
@@ -514,87 +569,99 @@ function topRounded(x, y, w, h, r){
   return `M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`;
 }
 function renderChart(a){
+  const keys = chartMode === "env" ? a.envs : EDS.filter(k => a.ed[k]);
+  const col = chartMode === "env" ? envColor : k => ED[k], val = (e, k) => chartMode === "env" ? e.env[k] : e.ed[k];
+  $("#chartLegend").innerHTML = keys.map(k => `<span><i class="${chartMode === "env" ? "round" : ""}" style="background:${col(k)}"></i>${esc(k)}</span>`).join("") +
+    `<span class="muted"><b style="color:var(--warn)">!</b> Export fehlt</span>`;
   const dim = daysInMonth(a.month), byDay = new Map(a.daily.map(x => [x.d, x]));
   const step = niceStep(Math.max(a.lic, 1)), max = Math.ceil(Math.max(a.lic, ...a.daily.map(x => x.total), 1) * 1.08 / step) * step;
   const W = 820, H = 280, L = 40, B = 24, T = 16, bw = (W - L) / dim, ih = H - T - B;
   const yv = v => T + ih * (1 - v / max);
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lizenzpflichtige Cores pro Tag">`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lizenzpflichtige Cores pro Tag">`, hits = "";
   for (let v = 0; v <= max; v += step) s += `<line class="grid" x1="${L}" x2="${W}" y1="${yv(v)}" y2="${yv(v)}"/><text class="ax num" x="${L-8}" y="${yv(v)+4}" text-anchor="end">${fmt(v)}</text>`;
-  let hits = "";
   for (let i = 1; i <= dim; i++){
     const d = `${a.month}-${String(i).padStart(2,"0")}`, x = L + (i-1) * bw + 1.5, w = Math.max(bw - 3, 1), e = byDay.get(d);
     if (e){
-      const segs = ["Datacenter","Standard","Andere"].filter(k => e[k] > 0);
+      const segs = keys.filter(k => val(e, k) > 0);
       let base = 0;
       segs.forEach((k, j) => {
-        const y1 = yv(base + e[k]), y0 = yv(base), gap = j ? 2 : 0;   // 2px Abstand zwischen Segmenten
-        const h = y0 - y1 - gap;
-        s += j === segs.length - 1 ? `<path d="${topRounded(x, y1, w, h, 3)}" fill="${ED[k]}"/>` : `<rect x="${x}" y="${y1}" width="${w}" height="${h}" fill="${ED[k]}"/>`;
-        base += e[k];
+        const y1 = yv(base + val(e, k)), h = yv(base) - y1 - (j ? 2 : 0);   // 2px Abstand zwischen Segmenten
+        s += j === segs.length - 1 ? `<path d="${topRounded(x, y1, w, h, 3)}" fill="${col(k)}"/>` : `<rect x="${x}" y="${y1}" width="${w}" height="${h}" fill="${col(k)}"/>`;
+        base += val(e, k);
       });
+      if (e.have.length < a.envs.length) s += `<text class="gapmark" x="${x + w/2}" y="${yv(e.total) - 4}" text-anchor="middle">!</text>`;
       hits += `<rect class="hit" data-d="${d}" x="${L + (i-1) * bw}" y="${T}" width="${bw}" height="${ih}"/>`;
     }
     if (i === 1 || i % 5 === 0) s += `<text class="ax" x="${L + (i-.5) * bw}" y="${H-6}" text-anchor="middle">${i}.</text>`;
   }
   s += `<line class="peak" x1="${L}" x2="${W}" y1="${yv(a.lic)}" y2="${yv(a.lic)}"/><text class="peaklbl num" x="${W}" y="${yv(a.lic)-6}" text-anchor="end">Monatswert ${fmt(a.lic)}</text>`;
   $("#chart").innerHTML = s + hits + "</svg>";
-  $("#chartsub").textContent = `${monthLabel(a.month)} · gestrichelt: Summe der Peaks pro Host = Reporting-Wert`;
-  $("#lgOth").hidden = !a.ed.Andere;
+  $("#chartsub").textContent = `${monthLabel(a.month)} · Total aller Umgebungen · gestrichelt: Summe der Peaks pro Host = Reporting-Wert`;
   $("#chart").onmousemove = ev => {
     const d = ev.target.dataset?.d; if (!d) return hideTip();
-    const e = byDay.get(d), row = (c, l, v) => v ? `<div class="r"><span><i style="background:${c}"></i>${l}</span><b class="num">${fmt(v)}</b></div>` : "";
+    const e = byDay.get(d);
+    const row = (c, l, v, r) => `<div class="r"><span><i class="${r ? "round" : ""}" style="background:${c}"></i>${esc(l)}</span><b class="num">${v}</b></div>`;
     showTip(ev, `<div class="t">${new Date(d).toLocaleDateString("de-CH", {weekday:"short", day:"numeric", month:"long"})}</div>
-      ${row(ED.Datacenter, "Datacenter", e.Datacenter)}${row(ED.Standard, "Standard", e.Standard)}${row(ED.Andere, "Andere", e.Andere)}
-      <div class="r" style="border-top:1px solid var(--line);margin-top:4px;padding-top:4px"><span>Total · ${e.n} Hosts</span><b class="num">${fmt(e.total)}</b></div>`);
+      <div class="h">Umgebung</div>${a.envs.map(k => row(envColor(k), k, e.have.includes(k) ? fmt(e.env[k]) : '<span style="color:var(--warn)">kein Export</span>', true)).join("")}
+      <div class="h">Edition</div>${EDS.filter(k => e.ed[k]).map(k => row(ED[k], k, fmt(e.ed[k]))).join("")}
+      <div class="r" style="border-top:1px solid var(--line);margin-top:6px;padding-top:4px"><span>Total · ${e.n} Hosts</span><b class="num">${fmt(e.total)}</b></div>`);
   };
   $("#chart").onmouseleave = hideTip;
 }
 function showTip(ev, html){
   const t = $("#tip"); t.innerHTML = html; t.classList.add("on");
   const r = t.getBoundingClientRect(), x = ev.clientX + 16 + r.width > innerWidth ? ev.clientX - r.width - 16 : ev.clientX + 16;
-  t.style.left = x + "px"; t.style.top = Math.max(8, ev.clientY - r.height / 2) + "px";
+  t.style.left = x + "px"; t.style.top = Math.max(8, Math.min(innerHeight - r.height - 8, ev.clientY - r.height / 2)) + "px";
 }
 function hideTip(){ $("#tip").classList.remove("on"); }
 
 function renderSplit(a){
-  const tot = a.lic || 1, eds = Object.entries(a.ed).filter(([, v]) => v);
-  $("#split").innerHTML = `<div class="split">${eds.map(([k, v]) => `<b style="width:${v/tot*100}%;background:${ED[k]}" title="${k}: ${fmt(v)}"></b>`).join("")}</div>
-    <div class="legend">${eds.map(([k, v]) => `<span><i style="background:${ED[k]}"></i>${k} <b class="num">${Math.round(v/tot*100)}%</b></span>`).join("")}</div>`;
+  const tot = a.lic || 1;
+  const bar = (title, entries, col, round) => `<h3>${title}</h3><div class="split">${entries.map(([k, v]) => `<b style="width:${v/tot*100}%;background:${col(k)}" title="${esc(k)}: ${fmt(v)}"></b>`).join("")}</div>
+    <div class="legend">${entries.map(([k, v]) => `<span><i class="${round ? "round" : ""}" style="background:${col(k)}"></i>${esc(k)} <b class="num">${fmt(v)}</b> <span class="muted">${Math.round(v/tot*100)}%</span></span>`).join("")}</div>`;
+  $("#split").innerHTML = bar("Umgebung", a.envs.map(e => [e, a.env[e]]).filter(([, v]) => v), envColor, true) +
+                          bar("Edition", EDS.map(k => [k, a.ed[k]]).filter(([, v]) => v), k => ED[k]);
   const cl = new Map();
   for (const h of a.hosts){
-    const k = h.cluster || "Standalone", c = cl.get(k) || {name:k, n:0, total:0, Datacenter:0, Standard:0, Andere:0};
-    c.n++; c.total += h.peakLic; c[h.ed] += h.peakLic; cl.set(k, c);
+    const key = h.env + "|" + (h.cluster || "Standalone");
+    const c = cl.get(key) || {env:h.env, name:h.cluster || "Standalone", n:0, total:0, ...zero(EDS)};
+    c.n++; c.total += h.peakLic; c[h.ed] += h.peakLic; cl.set(key, c);
   }
-  const list = [...cl.values()].sort((x, y) => (x.name === "Standalone") - (y.name === "Standalone") || y.total - x.total);
+  const list = [...cl.values()].sort((x, y) => envOrder(x.env) - envOrder(y.env) || x.env.localeCompare(y.env) || (x.name === "Standalone") - (y.name === "Standalone") || y.total - x.total);
   const max = Math.max(...list.map(c => c.total), 1);
   $("#clusters").innerHTML = list.map(c => `<div class="crow">
-      <div class="top2"><span title="${esc(c.name)}">${esc(c.name.split(".")[0])}</span><b class="num">${fmt(c.total)}</b></div>
-      <div class="track" style="width:${Math.max(c.total/max*100, 2)}%">${["Datacenter","Standard","Andere"].filter(k => c[k]).map(k => `<b style="flex:${c[k]};background:${ED[k]}"></b>`).join("")}</div>
+      <div class="top2"><span title="${esc(c.name)}">${etag(c.env)} ${esc(c.name.split(".")[0])}</span><b class="num">${fmt(c.total)}</b></div>
+      <div class="track" style="width:${Math.max(c.total/max*100, 2)}%">${EDS.filter(k => c[k]).map(k => `<b style="flex:${c[k]};background:${ED[k]}" title="${k}: ${fmt(c[k])}"></b>`).join("")}</div>
       <div class="meta">${c.n} Host${c.n > 1 ? "s" : ""}${c.name.includes(".") ? " · " + esc(c.name.split(".").slice(1).join(".")) : ""}</div></div>`).join("");
 }
 
-const cols = [["name","Host"],["cluster","Cluster"],["ed","Edition"],["cpus","CPU","n"],["peakPhys","Phys.","n"],["peakLic","SPLA Cores","n"],["daysSeen","Tage","n"],["state","Status"]];
+const cols = [["env","Umgebung"],["name","Host"],["cluster","Cluster"],["ed","Edition"],["cpus","CPU","n"],["peakPhys","Phys.","n"],["peakLic","SPLA Cores","n"],["daysSeen","Tage","n"],["state","Status"]];
 function renderHosts(a){
-  const {key, dir} = sortState, maxLic = Math.max(...a.hosts.map(h => h.peakLic), 1);
-  const ql = query.toLowerCase();
-  const list = a.hosts.filter(h => !ql || [h.name, h.cluster, h.os, h.desc, h.ed].join(" ").toLowerCase().includes(ql))
-    .sort((x, y) => (typeof x[key] === "number" ? x[key] - y[key] : String(x[key]).localeCompare(String(y[key]))) * dir || x.name.localeCompare(y.name));
+  $("#envFilter").innerHTML = ["ALLE", ...a.envs].map(e => `<button data-v="${esc(e)}" class="${e === envFilter ? "on" : ""}">${e === "ALLE" ? "Alle" : `<i style="background:${envColor(e)}"></i>${esc(e)}`} <span class="muted">${e === "ALLE" ? a.hosts.length : a.envHosts[e]}</span></button>`).join("");
+  const {key, dir} = sortState, maxLic = Math.max(...a.hosts.map(h => h.peakLic), 1), ql = query.toLowerCase();
+  const list = a.hosts.filter(h => (envFilter === "ALLE" || h.env === envFilter) && (!ql || [h.env, h.name, h.cluster, h.os, h.desc, h.ed].join(" ").toLowerCase().includes(ql)))
+    .sort((x, y) => (typeof x[key] === "number" ? x[key] - y[key] : String(x[key]).localeCompare(String(y[key]))) * dir || envOrder(x.env) - envOrder(y.env) || x.name.localeCompare(y.name));
   let h = `<thead><tr>${cols.map(([c, l, n]) => `<th class="${n||""}" data-k="${c}">${l}${key === c ? (dir > 0 ? " ↑" : " ↓") : ""}</th>`).join("")}</tr></thead><tbody>`;
   for (const x of list){
     const dot = !isOk(x.state) ? "crit" : x.notResp ? "warn" : "";
-    const partial = x.daysSeen < a.days.length ? `<small class="muted">${+x.first.slice(8)}.–${+x.last.slice(8)}.</small>` : "";
+    const partial = x.daysSeen < a.cov[x.env] ? `<br><small class="muted">${+x.first.slice(8)}.–${+x.last.slice(8)}.</small>` : "";
     h += `<tr>
-      <td class="host"><span class="dot ${dot}"></span><b>${esc(x.name)}</b><small style="margin-left:16px">${esc(x.os.replace(/^Microsoft\s+/i, ""))}${x.desc ? " · " + esc(x.desc) : ""}</small></td>
+      <td>${etag(x.env)}</td>
+      <td class="host"><span class="dot ${dot}"></span><b>${esc(x.name)}</b><small>${esc(x.os.replace(/^Microsoft\s+/i, ""))}${x.desc ? " · " + esc(x.desc) : ""}</small></td>
       <td class="cl">${x.cluster ? esc(x.cluster.split(".")[0]) : '<span class="muted">Standalone</span>'}</td>
       <td><span class="tag"><i style="background:${ED[x.ed]}"></i>${x.ed}</span></td>
       <td class="n">${x.cpus} × ${x.cpc}</td>
       <td class="n">${fmt(x.peakPhys)}</td>
       <td class="n"><div class="barcell">${x.peakLic > x.peakPhys ? '<span class="minnote" title="Mindestlizenzierung (8 pro CPU / 16 pro Server)">MIN</span>' : ""}<div class="minibar"><b style="width:${x.peakLic/maxLic*100}%;background:${ED[x.ed]}"></b></div><b class="num" style="min-width:2.5em">${fmt(x.peakLic)}</b></div></td>
-      <td class="n">${x.daysSeen}${partial ? "<br>" + partial : ""}</td>
+      <td class="n">${x.daysSeen}${partial}</td>
       <td>${esc(x.state)}${x.notResp ? ` <small class="muted" title="An ${x.notResp} Tag(en) nicht 'Responding'">(${x.notResp}× n.r.)</small>` : ""}</td></tr>`;
   }
-  const sum = f => list.reduce((s, x) => s + f(x), 0);
-  h += `</tbody><tfoot><tr><td colspan="3">${list.length === a.hosts.length ? "Total" : "Gefiltert"} · ${list.length} Hosts</td><td class="n">${fmt(sum(x => x.cpus))} CPUs</td><td class="n">${fmt(sum(x => x.peakPhys))}</td><td class="n">${fmt(sum(x => x.peakLic))}</td><td colspan="2"></td></tr></tfoot>`;
+  const sum = (f, l = list) => l.reduce((s, x) => s + f(x), 0);
+  const shownEnvs = a.envs.filter(e => list.some(x => x.env === e));
+  h += `</tbody><tfoot>`;
+  if (shownEnvs.length > 1) h += shownEnvs.map(e => { const l = list.filter(x => x.env === e);
+    return `<tr class="subt"><td>${etag(e)}</td><td colspan="3">${l.length} Hosts</td><td class="n">${fmt(sum(x => x.cpus, l))} CPUs</td><td class="n">${fmt(sum(x => x.peakPhys, l))}</td><td class="n">${fmt(sum(x => x.peakLic, l))}</td><td colspan="2"></td></tr>`; }).join("");
+  h += `<tr><td colspan="4">${envFilter === "ALLE" && !ql ? "Total alle Umgebungen" : "Total Auswahl"} · ${list.length} Hosts</td><td class="n">${fmt(sum(x => x.cpus))} CPUs</td><td class="n">${fmt(sum(x => x.peakPhys))}</td><td class="n">${fmt(sum(x => x.peakLic))}</td><td colspan="2"></td></tr></tfoot>`;
   $("#hosts").innerHTML = h;
   $("#hostsub").textContent = `${monthLabel(a.month)} · Peak pro Host · Spaltenkopf klicken zum Sortieren`;
   $("#hosts thead").onclick = e => {
@@ -605,37 +672,48 @@ function renderHosts(a){
 }
 
 function renderMonths(ms){
-  const aggs = ms.map(monthAgg).reverse(), max = Math.max(...aggs.map(a => a.lic), 1);
-  let h = `<thead><tr><th>Monat</th><th class="n">Exporte</th><th class="n">Hosts</th><th class="n">Phys.</th><th class="n">Datacenter</th><th class="n">Standard</th><th class="n">SPLA Cores</th><th class="n">Packs</th><th class="n">Δ Vormonat</th></tr></thead><tbody>`;
+  const aggs = ms.map(monthAgg).reverse(), max = Math.max(...aggs.map(a => a.lic), 1), envs = envsList();
+  let h = `<thead><tr><th>Monat</th><th>Exporte</th><th class="n">Hosts</th>${envs.map(e => `<th class="n">${esc(e)}</th>`).join("")}<th class="n">Datacenter</th><th class="n">Standard</th><th class="n">SPLA Cores (Total)</th><th class="n">Packs</th><th class="n">Δ Vormonat</th></tr></thead><tbody>`;
+  const today = new Date(), curM = today.toISOString().slice(0,7);
   aggs.forEach((a, i) => {
-    const prev = aggs[i+1], full = a.days.length >= daysInMonth(a.month);
+    const prev = aggs[i+1], dim = daysInMonth(a.month), expected = a.month === curM ? today.getDate() : dim;
     h += `<tr class="click${a.month === curMonth ? " sel" : ""}" data-m="${a.month}">
       <td><b>${monthLabel(a.month)}</b></td>
-      <td class="n ${full ? "" : "muted"}">${a.days.length}/${daysInMonth(a.month)}</td>
-      <td class="n">${a.hosts.length}</td><td class="n">${fmt(a.phys)}</td>
+      <td><span class="cov num">${envs.map(e => `<span class="${(a.cov[e] || 0) < expected ? "bad" : ""}" title="${esc(e)}: ${a.cov[e] || 0} von ${dim} Tagen"><i style="background:${envColor(e)}"></i>${a.cov[e] || 0}</span>`).join("")}<span class="muted">/ ${dim}</span></span></td>
+      <td class="n">${a.hosts.length}</td>
+      ${envs.map(e => `<td class="n">${fmt(a.env[e] || 0)}</td>`).join("")}
       <td class="n">${fmt(a.ed.Datacenter)}</td><td class="n">${fmt(a.ed.Standard)}</td>
-      <td class="n"><div class="barcell"><div class="minibar"><b style="width:${a.lic/max*100}%"></b></div><b class="num" style="min-width:2.5em">${fmt(a.lic)}</b></div></td>
+      <td class="n"><div class="barcell"><div class="minibar">${envs.filter(e => a.env[e]).map(e => `<b style="width:${a.env[e]/max*100}%;background:${envColor(e)}"></b>`).join("")}</div><b class="num" style="min-width:2.5em">${fmt(a.lic)}</b></div></td>
       <td class="n">${fmt(a.lic/2)}</td>
       <td class="n">${prev ? deltaBadge(a.lic - prev.lic) : '<span class="muted">–</span>'}</td></tr>`;
   });
   $("#months").innerHTML = h + "</tbody>";
 }
 
+function lastPerEnv(){
+  const m = {};
+  for (const e of allExports()) if (!m[e.env] || e.date > m[e.env]) m[e.env] = e.date;
+  return m;
+}
 function renderFooter(){
-  const all = [...days.keys()].sort(), lastD = all[all.length-1];
-  $("#files").innerHTML = `<p>${days.size} Tages-Exporte: ` + all.map(d => esc(days.get(d).file)).join(", ") + "</p>";
-  $("#foot").innerHTML = `Quelle: ${[...sources].join(" + ") || "–"} · ${days.size} Tages-Exporte · letzter Export ${new Date(lastD).toLocaleDateString("de-CH")} · geladen ${new Date().toLocaleString("de-CH", {dateStyle:"short", timeStyle:"short"})}`;
+  const envs = envsList(), last = lastPerEnv();
+  $("#files").innerHTML = envs.map(e => { const l = allExports().filter(x => x.env === e).sort((x, y) => x.date.localeCompare(y.date));
+    return `<p>${etag(e)} ${l.length} Exporte: ${l.map(x => esc(x.file)).join(", ")}</p>`; }).join("");
+  $("#foot").innerHTML = `Quelle: ${[...sources].join(" + ") || "–"} · ${exportsMap.size} Tages-Exporte · letzter Export ${envs.map(e => `${esc(e)} ${new Date(last[e]).toLocaleDateString("de-CH")}`).join(", ")} · geladen ${new Date().toLocaleString("de-CH", {dateStyle:"short", timeStyle:"short"})}`;
 }
 function checkFreshness(){
-  const all = [...days.keys()].sort(), lastD = all[all.length-1];
-  const age = Math.floor((new Date().setHours(0,0,0,0) - new Date(lastD + "T00:00").getTime()) / 864e5);
-  notice(age > 1 ? `Letzter Tages-Export ist vom <b>${new Date(lastD).toLocaleDateString("de-CH")}</b> (vor ${age} Tagen) – läuft der tägliche Export noch?` : "");
+  const last = lastPerEnv(), today = new Date().setHours(0,0,0,0);
+  const stale = Object.entries(last).map(([e, d]) => [e, d, Math.floor((today - new Date(d + "T00:00").getTime()) / 864e5)]).filter(([, , age]) => age > 1);
+  notice(stale.length ? "Tages-Export veraltet: " + stale.map(([e, d, age]) => `<b>${esc(e)}</b> zuletzt am ${new Date(d).toLocaleDateString("de-CH")} (vor ${age} Tagen)`).join(", ") + " – läuft der tägliche Export noch?" : "");
 }
 
 /* ================= Events ================= */
 $("#chips").onclick = e => { const m = e.target.closest("[data-m]")?.dataset.m; if (m) select(m); };
 $("#spark").onclick = e => { const m = e.target.closest("[data-m]")?.dataset.m; if (m) select(m); };
 $("#months").onclick = e => { const m = e.target.closest("tr[data-m]")?.dataset.m; if (m){ select(m); scrollTo({top:0, behavior:"smooth"}); } };
+$("#chartMode").onclick = e => { const v = e.target.closest("button")?.dataset.v; if (!v) return; chartMode = v;
+  $("#chartMode").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); renderChart(monthAgg(curMonth)); };
+$("#envFilter").onclick = e => { const v = e.target.closest("button")?.dataset.v; if (v){ envFilter = v; renderHosts(monthAgg(curMonth)); } };
 $("#q").oninput = e => { query = e.target.value; renderHosts(monthAgg(curMonth)); };
 $("#reload").onclick = reread;
 $("#pick").onclick = pickFolder;
@@ -643,10 +721,12 @@ $("#dir").onchange = e => { const fl = [...e.target.files]; e.target.value = "";
 $("#exp").onclick = () => {
   if (!curMonth) return;
   const a = monthAgg(curMonth), q = v => `"${String(v).replace(/"/g,'""')}"`;
-  const L = [["Monat","Host","Cluster","Edition","OperatingSystem","CPUs","CoresPerCPU","PhysCores","SPLACores","CorePacks2","TageGesehen","ErsterTag","LetzterTag"]];
-  a.hosts.slice().sort((x, y) => x.name.localeCompare(y.name)).forEach(h => L.push([curMonth,h.name,h.cluster,h.ed,h.os,h.cpus,h.cpc,h.peakPhys,h.peakLic,h.peakLic/2,h.daysSeen,h.first,h.last]));
-  for (const k of ["Datacenter","Standard","Andere"]) if (a.ed[k]) L.push(["TOTAL","","",k,"","","","",a.ed[k],a.ed[k]/2,"","",""]);
-  L.push(["TOTAL","","","Alle","",a.cpus,"",a.phys,a.lic,a.lic/2,"","",""]);
+  const L = [["Monat","Umgebung","Host","Cluster","Edition","OperatingSystem","CPUs","CoresPerCPU","PhysCores","SPLACores","CorePacks2","TageGesehen","ErsterTag","LetzterTag"]];
+  a.hosts.slice().sort((x, y) => envOrder(x.env) - envOrder(y.env) || x.name.localeCompare(y.name))
+    .forEach(h => L.push([curMonth,h.env,h.name,h.cluster,h.ed,h.os,h.cpus,h.cpc,h.peakPhys,h.peakLic,h.peakLic/2,h.daysSeen,h.first,h.last]));
+  for (const e of a.envs) L.push(["TOTAL",e,"","","Alle","","","",a.envPhys[e],a.env[e],a.env[e]/2,"","",""]);
+  for (const k of EDS) if (a.ed[k]) L.push(["TOTAL","Alle","","",k,"","","","",a.ed[k],a.ed[k]/2,"","",""]);
+  L.push(["TOTAL","Alle","","","Alle","",a.cpus,"",a.phys,a.lic,a.lic/2,"","",""]);
   const link = Object.assign(document.createElement("a"), {href:URL.createObjectURL(new Blob(["﻿" + L.map(r => r.map(q).join(";")).join("\r\n")], {type:"text/csv"})), download:`SPLA_Report_${curMonth}.csv`});
   link.click(); URL.revokeObjectURL(link.href);
 };
