@@ -233,7 +233,7 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
         <li>Monatswert pro Host = Höchststand aller Tages-Exporte im Monat. Ein Host zählt, sobald er an einem Tag auftaucht.</li>
         <li>Edition aus <code>OperatingSystem</code> (Datacenter / Standard), massgebend ist der letzte Tag im Monat.</li>
         <li>Datum aus dem Dateinamen (<code>…_JJJJMMTT.csv</code>). Mehrere Dateien am selben Tag: die letzte gewinnt.</li>
-        <li>Datenquelle: der Ordner mit den CSV-Exporten. Beim Start automatisch über die Verzeichnisliste des Webservers oder den im Browser gemerkten Ordner (Edge/Chrome), sonst über „Ordner wählen“ oder Drag &amp; Drop.</li>
+        <li>Datenquelle: der Unterordner <code>report/</code> mit den CSV-Exporten. Beim Start automatisch über die Verzeichnisliste des Webservers oder den im Browser gemerkten Ordner (Edge/Chrome), sonst über „Ordner wählen“ oder Drag &amp; Drop.</li>
       </ul>
       <div id="files"></div>
     </details>
@@ -304,6 +304,7 @@ function addFile(name, text, lastMod){
 //   3) sonst Startkarte mit "Ordner wählen" bzw. Drag & Drop
 const canPick = "showDirectoryPicker" in window;
 const isHttp = location.protocol.startsWith("http");
+const CSV_DIR = "report/";   // Unterordner mit den täglichen CSV-Exporten (relativ zu dieser Seite)
 let dirHandle = null;
 
 function kv(mode, fn){
@@ -323,14 +324,14 @@ const loadHandle = () => kv("readonly", st => st.get("dir")).catch(() => null);
 const saveHandle = h => kv("readwrite", st => st.put(h, "dir")).catch(e => console.warn("Ordner kann nicht gemerkt werden", e));
 
 async function loadListing(){
-  const r = await fetch("./", {cache:"no-store"});
+  const r = await fetch(CSV_DIR, {cache:"no-store"});
   if (!r.ok) return 0;
   const html = await r.text();
-  if (html.includes('id="heroNum"')) return 0;   // Server liefert Startseite statt Liste
+  if (html.includes('id="heroNum"')) return 0;   // Server liefert eine Seite statt der Liste
   const urls = new Set();
   new DOMParser().parseFromString(html, "text/html").querySelectorAll("a[href]").forEach(a => {
     const href = a.getAttribute("href").split("?")[0];
-    if (/\.csv$/i.test(href)) urls.add(new URL(href, location.href).href);
+    if (/\.csv$/i.test(href)) urls.add(new URL(href, r.url).href);
   });
   let n = 0;
   await Promise.all([...urls].map(async u => {
@@ -401,7 +402,7 @@ function renderWelcome(){
     <h2>${known ? "Daten neu einlesen" : "CSV-Ordner verbinden"}</h2>
     <p>${known
       ? `Der Browser braucht deine Bestätigung, um den Ordner <b>„${esc(dirHandle.name)}“</b> erneut zu lesen.`
-      : "Wähle den Ordner, in dem die täglichen VMM-Exporte landen."}</p>
+      : "Wähle den Ordner, in dem die täglichen VMM-Exporte landen (normalerweise <code>report</code>)."}</p>
     <button class="bigbtn" id="wbtn">${known ? `„${esc(dirHandle.name)}“ einlesen` : "Ordner wählen"}</button>
     <p class="small">${canPick
       ? (known ? `<button class="linkbtn" id="wother">Anderen Ordner wählen</button> · ` : "") + "Der Browser merkt sich den Ordner und liest ihn bei den nächsten Starts automatisch ein (bzw. mit einem Klick)."
