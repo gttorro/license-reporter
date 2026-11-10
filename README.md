@@ -6,30 +6,29 @@ SPLA-Reporting-Dashboard für Hyper-V/VMM-Hosts (Windows Server, Core-Lizenzieru
 
 ```
 report/
-  dashboard.html                       <- die ganze Website (eine Datei, keine externen Abhängigkeiten)
+  dashboard.html                       <- die Website (eine Datei, keine externen Abhängigkeiten)
+  Export-SplaData.ps1                  <- täglicher Export: schreibt CSV + data.js
+  data.js                              <- alle CSVs gebündelt (wird vom Skript erzeugt)
   VMMHostExport_<NAME>_JJJJMMTT.csv    <- ein Export pro Tag (hier: Dummy-Daten Sep–Nov 2026)
 ```
 
-Die Seite listet alle `*.csv` im eigenen Ordner über das Directory-Listing des
-Webservers auf, liest sie ein und berechnet pro Monat die lizenzpflichtigen Cores.
-
 ## Betrieb
 
-* Ordner `report/` per Webserver ausliefern und **Directory-Listing aktivieren**
-  * IIS: Feature "Verzeichnis durchsuchen" aktivieren (`<directoryBrowse enabled="true" />`)
-  * Apache: `Options +Indexes`, nginx: `autoindex on;`
-  * Test lokal: `cd report && python3 -m http.server` → http://localhost:8000/dashboard.html
-* Die Seite **nicht** in `index.html`/`default.htm` umbenennen – sonst liefert der
-  Server die Seite statt der Dateiliste aus.
-* Ohne Webserver (file://) können CSVs per Drag & Drop oder "CSV wählen…" geladen werden.
+1. Ordner `report/` auf den VMM-Server oder eine Freigabe kopieren.
+2. `Export-SplaData.ps1` als geplante Aufgabe täglich ausführen:
+   ```
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "D:\report\Export-SplaData.ps1" -VMMServer vmm01
+   ```
+   Das Skript exportiert die Hosts nach `VMMHostExport_PROD_JJJJMMTT.csv` und baut danach `data.js` neu.
+3. `dashboard.html` öffnen – per Doppelklick, von der Netzwerkfreigabe oder über einen beliebigen Webserver.
+   Es ist **keine Webserver-Konfiguration** nötig.
 
-Täglicher Export, z.B. per geplanter Task auf dem VMM-Server:
+Weitere Optionen: `-SkipExport` (nur `data.js` aus vorhandenen CSVs neu bauen), `-Prefix`, `-KeepDays`.
 
-```powershell
-Get-SCVMHost | Select-Object ComputerName,HostCluster,PhysicalCPUCount,CoresPerCPU,LogicalCPUCount,
-  ProcessorManufacturer,CPUSpeed,OperatingSystem,Description,ComputerState |
-  Export-Csv "\\webserver\report\VMMHostExport_PROD_$(Get-Date -f yyyyMMdd).csv" -NoTypeInformation
-```
+Zusätzliche Wege, Daten zu laden (optional):
+* Liegt die Seite auf einem Webserver mit aktivem Directory-Listing (IIS "Verzeichnis durchsuchen",
+  Apache `Options +Indexes`, nginx `autoindex on`), werden CSVs auch ohne `data.js` gefunden.
+* CSV-Dateien per Drag & Drop oder "CSV laden" ins Dashboard ziehen.
 
 ## Berechnung
 

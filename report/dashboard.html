@@ -6,111 +6,250 @@
 <title>SPLA Core Reporting</title>
 <style>
 :root{
-  --bg:#f6f7f9;--card:#fff;--fg:#1c2330;--muted:#647084;--line:#e3e6eb;
-  --accent:#2f6fde;--accent2:#7aa4ee;--warn:#c27c0e;--bad:#c23b3b;--ok:#2c8a4b;
+  color-scheme:light;
+  --bg:#f2f4f8;--surface:#fff;--surface2:#f7f8fb;--text:#0f1726;--text2:#4f5b70;--muted:#8a94a6;--line:#e3e7ee;
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s1soft:#2a78d61f;--s4:#6250d6;
+  --good:#1f9d55;--warn:#c98500;--crit:#d64545;
+  --hero1:#163d82;--hero2:#4b37b8;--heroText:#fff;
+  --shadow:0 1px 2px #0f17260d,0 4px 16px #0f17260a;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#12161d;--card:#1b212b;--fg:#e6e9ef;--muted:#97a1b3;--line:#2c3441;
-  --accent:#6b9cf5;--accent2:#3d5f9e;--warn:#e0a640;--bad:#e46a6a;--ok:#5cc07f;}}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){
+  color-scheme:dark;
+  --bg:#0d1117;--surface:#161b23;--surface2:#1c222c;--text:#eef1f6;--text2:#b4bccb;--muted:#7d8799;--line:#2a313d;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s1soft:#3987e526;--s4:#9085e9;
+  --good:#3fbf74;--warn:#e0a640;--crit:#e66767;
+  --hero1:#10295a;--hero2:#33237f;--shadow:0 1px 2px #0006,0 4px 16px #0004;}}
 :root[data-theme="dark"]{
-  --bg:#12161d;--card:#1b212b;--fg:#e6e9ef;--muted:#97a1b3;--line:#2c3441;
-  --accent:#6b9cf5;--accent2:#3d5f9e;--warn:#e0a640;--bad:#e46a6a;--ok:#5cc07f;}
+  color-scheme:dark;
+  --bg:#0d1117;--surface:#161b23;--surface2:#1c222c;--text:#eef1f6;--text2:#b4bccb;--muted:#7d8799;--line:#2a313d;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s1soft:#3987e526;--s4:#9085e9;
+  --good:#3fbf74;--warn:#e0a640;--crit:#e66767;
+  --hero1:#10295a;--hero2:#33237f;--shadow:0 1px 2px #0006,0 4px 16px #0004;}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--line);background:var(--card)}
-h1{font-size:18px;margin:0}
-h2{font-size:15px;margin:0 0 12px}
-main{max-width:1280px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
-.kpi .l{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
-.kpi .v{font-size:28px;font-weight:650;font-variant-numeric:tabular-nums;margin-top:2px}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 "Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
+button,select,input{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Hero ---------- */
+.hero{background:radial-gradient(1200px 400px at 85% -10%,#ffffff22,transparent 60%),linear-gradient(120deg,var(--hero1),var(--hero2));color:var(--heroText);padding:18px 0 72px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:40px;height:40px;border-radius:11px;background:#ffffff1f;display:grid;place-items:center;border:1px solid #ffffff30}
+.brand h1{font-size:17px;margin:0;line-height:1.2}
+.brand small{opacity:.75;font-size:12.5px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.hbtn{display:inline-flex;gap:6px;align-items:center;background:#ffffff1a;border:1px solid #ffffff33;color:#fff;border-radius:9px;padding:7px 12px;cursor:pointer;transition:background .15s}
+.hbtn:hover{background:#ffffff2e}
+.hbtn svg{width:16px;height:16px}
+.chips{display:flex;gap:6px;margin:22px 0 0;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.chip{flex:none;border:1px solid #ffffff33;background:transparent;color:#ffffffd9;border-radius:999px;padding:5px 14px;cursor:pointer;font-size:13px;transition:all .15s}
+.chip:hover{background:#ffffff1a}
+.chip.on{background:#fff;color:var(--hero1);border-color:#fff;font-weight:600}
+.hero-main{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-end;justify-content:space-between;margin-top:26px}
+.eyebrow{font-size:13px;opacity:.8;letter-spacing:.02em}
+.big{display:flex;align-items:baseline;gap:10px;margin:2px 0 6px}
+.big b{font-size:clamp(48px,8vw,76px);font-weight:700;letter-spacing:-.03em;line-height:1}
+.big span{font-size:20px;opacity:.8}
+.hero-sub{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:14px;opacity:.95}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:600;background:#ffffff26}
+.spark{min-width:260px;flex:0 1 380px}
+.spark svg{width:100%;height:auto;display:block}
+.spark .lbl{fill:#ffffffb3;font-size:10px}
+.spark .val{fill:#fff;font-size:10px;font-weight:600}
+.spark rect{cursor:pointer;transition:opacity .15s}
+.spark-cap{font-size:12px;opacity:.75;margin-bottom:6px}
+
+/* ---------- Content ---------- */
+main.wrap{margin-top:-48px;display:grid;gap:16px;padding-bottom:28px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);min-width:0}
+.card h2{font-size:15px;margin:0;display:flex;align-items:center;gap:8px}
+.card .sub{color:var(--muted);font-size:12.5px;margin:2px 0 14px}
+.chead{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;justify-content:space-between}
+.notice{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:12px;padding:12px 16px;box-shadow:var(--shadow);color:var(--text2)}
+.notice[hidden]{display:none}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.kpi{display:flex;gap:14px;align-items:flex-start}
+.ico{flex:none;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--c-soft,var(--s1soft));color:var(--c,var(--s1))}
+.ico svg{width:22px;height:22px}
+.kpi .l{color:var(--text2);font-size:12.5px}
+.kpi .v{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
 .kpi .s{color:var(--muted);font-size:12px}
-.kpi.main{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}
-select,button{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
-button:hover,select:hover{border-color:var(--accent)}
-.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ring{flex:none}
+.ring circle{fill:none;stroke-width:5}
+
+.grid2{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--text2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+#chart{position:relative}
+#chart svg{width:100%;height:auto;display:block;overflow:visible}
+#chart .grid{stroke:var(--line)}
+#chart .ax{fill:var(--muted);font-size:11px}
+#chart .hit{fill:transparent;cursor:crosshair}
+#chart .hit:hover{fill:var(--s1soft)}
+#chart .peak{stroke:var(--text);stroke-dasharray:5 4;stroke-width:1.5;opacity:.7}
+#chart .peaklbl{fill:var(--text);font-size:11.5px;font-weight:600}
+
+.clist{display:grid;gap:12px}
+.crow .top2{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.crow .top2 span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow .meta{color:var(--muted);font-size:11.5px}
+.track{height:8px;border-radius:4px;background:var(--surface2);overflow:hidden;margin-top:5px;display:flex;gap:2px}
+.track b{display:block;height:100%;border-radius:4px}
+.split{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;margin:6px 0 4px}
+.split b{display:block;height:100%}
+
+.tools{display:flex;gap:8px;align-items:center}
+.search{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:6px 10px;color:var(--muted)}
+.search input{border:0;outline:0;background:transparent;width:180px;color:var(--text)}
+.tbl{overflow-x:auto;margin:0 -20px;padding:0 20px}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
-th{color:var(--muted);font-weight:600;font-size:12px;cursor:pointer;user-select:none}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none;background:var(--surface)}
+th:hover{color:var(--text)}
 td.n,th.n{text-align:right}
-tfoot td{font-weight:700;border-top:2px solid var(--fg);border-bottom:none}
-tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
-tbody tr.click{cursor:pointer}
-.tag{display:inline-block;padding:1px 7px;border-radius:9px;font-size:11px;border:1px solid var(--line)}
-.tag.dc{color:var(--accent);border-color:var(--accent)}
-.tag.std{color:var(--ok);border-color:var(--ok)}
-.tag.oth{color:var(--warn);border-color:var(--warn)}
-.warn{color:var(--warn)}.bad{color:var(--bad)}.muted{color:var(--muted)}
-#chart svg{width:100%;height:auto;display:block}
-#chart .bar{fill:var(--accent)}#chart .bar.dim{fill:var(--accent2)}
-#chart text{fill:var(--muted);font-size:10px}
-#chart line{stroke:var(--line)}
-#msg{padding:12px 16px;border-radius:8px;border:1px dashed var(--line);color:var(--muted)}
-#drop.over{outline:2px dashed var(--accent);outline-offset:-8px}
-details summary{cursor:pointer;color:var(--muted)}
-@media (max-width:600px){header{padding:12px 16px}.kpi .v{font-size:22px}}
+tbody tr{transition:background .1s}
+tbody tr:hover{background:var(--surface2)}
+tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--line)}
+tr.sel{background:var(--s1soft)!important}
+tr.click{cursor:pointer}
+.host b{font-weight:600}
+.host small{display:block;color:var(--muted);font-size:11.5px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px;background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 20%,transparent)}
+.dot.warn{background:var(--warn);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn) 20%,transparent)}
+.dot.crit{background:var(--crit);box-shadow:0 0 0 3px color-mix(in srgb,var(--crit) 20%,transparent)}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:999px;font-size:12px;background:var(--surface2);border:1px solid var(--line);color:var(--text2)}
+.tag i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.cl{color:var(--text2)}
+.barcell{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.minibar{width:90px;height:6px;border-radius:3px;background:var(--surface2);overflow:hidden}
+.minibar b{display:block;height:100%;background:var(--s1);border-radius:3px}
+.minnote{color:var(--warn);font-size:11px;font-weight:600}
+.badge{display:inline-block;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:600}
+.badge.up{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.badge.down{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
+.badge.eq{background:var(--surface2);color:var(--muted)}
+.muted{color:var(--muted)}
+
+details summary{cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details summary::before{content:"›";display:inline-block;transition:transform .15s;color:var(--muted);font-size:18px;line-height:1}
+details[open] summary::before{transform:rotate(90deg)}
+details ul{color:var(--text2);padding-left:20px}
+code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:0 5px;font-size:12.5px}
+#files{color:var(--muted);font-size:12px;word-break:break-all}
+footer{color:var(--muted);font-size:12px;padding:0 0 32px}
+
+.tip{position:fixed;pointer-events:none;z-index:10;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 8px 28px #0f172633;font-size:12.5px;min-width:180px;opacity:0;transition:opacity .1s}
+.tip.on{opacity:1}
+.tip .t{font-weight:600;margin-bottom:6px}
+.tip .r{display:flex;justify-content:space-between;gap:16px}
+.tip .r span:first-child{color:var(--text2)}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+
+body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;border:3px dashed #fff;border-radius:18px;background:#163d82cc;color:#fff;display:grid;place-items:center;font-size:22px;font-weight:600;z-index:20}
+@media (max-width:600px){.wrap{padding:0 16px}.tbl{margin:0 -16px;padding:0 16px}.search input{width:120px}.card{padding:16px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
-<body id="drop">
-<header>
-  <h1>SPLA Core Reporting <span class="muted" style="font-weight:400">· Windows Server (VMM-Hosts)</span></h1>
-  <div class="ctl">
-    <label>Monat <select id="month"></select></label>
-    <button id="exp" title="Monatsreport als CSV herunterladen">Export CSV</button>
-    <button id="reload">Neu laden</button>
-    <label><button id="pick" type="button">CSV wählen…</button><input id="file" type="file" accept=".csv" multiple hidden></label>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div>
+        <div><h1>SPLA Core Reporting</h1><small>Windows Server · Hyper-V/VMM-Hosts</small></div>
+      </div>
+      <div class="actions">
+        <button class="hbtn" id="exp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Monatsreport</button>
+        <button class="hbtn" id="reload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Neu laden</button>
+        <button class="hbtn" id="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7v12h16V9h-8l-2-2H4z"/></svg>CSV laden</button>
+        <input id="file" type="file" accept=".csv" multiple hidden>
+      </div>
+    </div>
+    <nav class="chips" id="chips" aria-label="Monat wählen"></nav>
+    <div class="hero-main">
+      <div>
+        <div class="eyebrow" id="eyebrow">Zu meldende Cores</div>
+        <div class="big"><b class="num" id="heroNum">–</b><span>Cores</span></div>
+        <div class="hero-sub" id="heroSub"></div>
+      </div>
+      <div class="spark"><div class="spark-cap">SPLA Cores pro Monat</div><div id="spark"></div></div>
+    </div>
   </div>
 </header>
-<main>
-  <div id="msg">Lade CSV-Dateien…</div>
+
+<main class="wrap">
+  <div class="notice" id="msg" hidden></div>
   <section class="kpis" id="kpis"></section>
-  <section class="card">
-    <h2>Lizenzpflichtige Cores pro Tag <span class="muted" id="chartsub" style="font-weight:400"></span></h2>
-    <div id="chart"></div>
+
+  <section class="grid2">
+    <div class="card">
+      <div class="chead">
+        <div><h2>Lizenzpflichtige Cores pro Tag</h2><div class="sub" id="chartsub"></div></div>
+        <div class="legend"><span><i style="background:var(--s1)"></i>Datacenter</span><span><i style="background:var(--s2)"></i>Standard</span><span id="lgOth" hidden><i style="background:var(--s3)"></i>Andere</span></div>
+      </div>
+      <div id="chart"></div>
+    </div>
+    <div class="card">
+      <h2>Verteilung</h2><div class="sub">SPLA Cores nach Edition und Cluster</div>
+      <div id="split"></div>
+      <div class="clist" id="clusters" style="margin-top:18px"></div>
+    </div>
   </section>
+
   <section class="card">
-    <h2>Hosts im Monat <span class="muted" id="hostsub" style="font-weight:400"></span></h2>
-    <table id="hosts"></table>
+    <div class="chead">
+      <div><h2>Hosts</h2><div class="sub" id="hostsub"></div></div>
+      <div class="tools"><label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Host, Cluster, OS…" type="search"></label></div>
+    </div>
+    <div class="tbl"><table id="hosts"></table></div>
   </section>
+
   <section class="card">
-    <h2>Monatsübersicht</h2>
-    <table id="months"></table>
+    <h2>Monatsübersicht</h2><div class="sub">Klick auf eine Zeile wählt den Monat</div>
+    <div class="tbl"><table id="months"></table></div>
   </section>
+
   <section class="card">
     <details>
-      <summary>Berechnungsregeln &amp; geladene Dateien</summary>
+      <summary>Berechnungsregeln &amp; Datenquelle</summary>
       <ul>
-        <li>Pro Host werden alle physischen Cores gezählt (<code>PhysicalCPUCount × CoresPerCPU</code>); Hyperthreading (LogicalCPUCount) zählt nicht.</li>
-        <li>Mindestlizenzierung Windows Server: 8 Cores pro Prozessor, 16 Cores pro Server. Lizenziert wird in 2‑Core‑Packs.</li>
-        <li>Monatswert pro Host = Höchststand (Peak) aller Tages-Exporte im Monat. Ein Host zählt, sobald er an einem Tag im Monat auftaucht.</li>
-        <li>Edition wird aus <code>OperatingSystem</code> gelesen (Datacenter / Standard), massgebend ist der letzte Tag im Monat.</li>
-        <li>Das Datum wird aus dem Dateinamen gelesen (<code>…_JJJJMMTT.csv</code>). Mehrere Dateien am selben Tag: die letzte gewinnt.</li>
+        <li>Pro Host zählen alle physischen Cores (<code>PhysicalCPUCount × CoresPerCPU</code>); Hyperthreading zählt nicht.</li>
+        <li>Mindestlizenzierung Windows Server: 8 Cores pro Prozessor, 16 Cores pro Server, in 2‑Core‑Packs.</li>
+        <li>Monatswert pro Host = Höchststand aller Tages-Exporte im Monat. Ein Host zählt, sobald er an einem Tag auftaucht.</li>
+        <li>Edition aus <code>OperatingSystem</code> (Datacenter / Standard), massgebend ist der letzte Tag im Monat.</li>
+        <li>Datum aus dem Dateinamen (<code>…_JJJJMMTT.csv</code>). Mehrere Dateien am selben Tag: die letzte gewinnt.</li>
+        <li>Datenquelle: <code>data.js</code> (vom Export-Skript erzeugt, funktioniert auch ohne Webserver), zusätzlich – falls vorhanden – das Directory-Listing des Webservers oder manuell geladene Dateien.</li>
       </ul>
-      <div id="files" class="muted"></div>
+      <div id="files"></div>
     </details>
   </section>
 </main>
+<footer class="wrap" id="foot"></footer>
+<div class="tip" id="tip"></div>
+
 <script>
 "use strict";
 const $ = s => document.querySelector(s);
-const fmt = n => n.toLocaleString("de-CH");
-let days = new Map();   // "YYYY-MM-DD" -> {file, hosts:[...]}
-let sortState = {key:"lic", dir:-1};
+const fmt = n => Math.round(n).toLocaleString("de-CH");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ED = {Datacenter:"var(--s1)", Standard:"var(--s2)", Andere:"var(--s3)"};
+let days = new Map();            // "YYYY-MM-DD" -> {file, hosts}
+let sources = new Set();
+let curMonth = null, sortState = {key:"peakLic", dir:-1}, query = "";
 
-/* ---------- CSV ---------- */
+/* ================= CSV ================= */
 function parseCSV(text){
   text = text.replace(/^﻿/, "");
   const first = text.split(/\r?\n/,1)[0];
-  const delim = (first.split(";").length > first.split(",").length) ? ";" : ",";
+  const delim = first.split(";").length > first.split(",").length ? ";" : ",";
   const rows = []; let row = [], f = "", q = false;
   for (let i = 0; i < text.length; i++){
     const c = text[i];
-    if (q){
-      if (c === '"'){ if (text[i+1] === '"'){ f += '"'; i++; } else q = false; }
-      else f += c;
-    } else if (c === '"') q = true;
+    if (q){ if (c === '"'){ if (text[i+1] === '"'){ f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
     else if (c === delim){ row.push(f); f = ""; }
     else if (c === "\n" || c === "\r"){
       if (c === "\r" && text[i+1] === "\n") i++;
@@ -122,28 +261,15 @@ function parseCSV(text){
   const head = rows.shift().map(h => h.trim());
   return rows.map(r => Object.fromEntries(head.map((h, i) => [h, (r[i] ?? "").trim()])));
 }
-
-function edition(os){
-  if (/datacenter/i.test(os)) return "Datacenter";
-  if (/standard/i.test(os)) return "Standard";
-  return "Andere";
-}
+const edition = os => /datacenter/i.test(os) ? "Datacenter" : /standard/i.test(os) ? "Standard" : "Andere";
 function licCores(cpus, cpc){
   if (!cpus || !cpc) return 0;
-  const c = Math.max(cpus * Math.max(cpc, 8), 16);
-  return Math.ceil(c / 2) * 2;
+  return Math.ceil(Math.max(cpus * Math.max(cpc, 8), 16) / 2) * 2;
 }
 function toHost(r){
-  const cpus = parseInt(r.PhysicalCPUCount) || 0, cpc = parseInt(r.CoresPerCPU) || 0;
-  return {
-    name: (r.ComputerName || "").toUpperCase(),
-    cluster: r.HostCluster || "",
-    cpus, cpc, phys: cpus * cpc,
-    logical: parseInt(r.LogicalCPUCount) || 0,
-    lic: licCores(cpus, cpc),
-    os: r.OperatingSystem || "", ed: edition(r.OperatingSystem || ""),
-    desc: r.Description || "", state: r.ComputerState || ""
-  };
+  const cpus = parseInt(r.PhysicalCPUCount) || 0, cpc = parseInt(r.CoresPerCPU) || 0, os = r.OperatingSystem || "";
+  return {name:(r.ComputerName || "").toUpperCase(), cluster:r.HostCluster || "", cpus, cpc, phys:cpus*cpc,
+    lic:licCores(cpus, cpc), os, ed:edition(os), desc:r.Description || "", state:r.ComputerState || ""};
 }
 function dateFromName(name){
   const m = name.match(/(20\d{2})[-_]?(\d{2})[-_]?(\d{2})(?!.*\d{8})/);
@@ -153,200 +279,305 @@ function addFile(name, text, lastMod){
   let d = dateFromName(name);
   if (!d && lastMod) d = new Date(lastMod).toISOString().slice(0,10);
   if (!d) return false;
-  const hosts = parseCSV(text).filter(r => r.ComputerName).map(toHost);
-  // doppelte Hosts innerhalb einer Datei zusammenfassen
-  const uniq = new Map(); hosts.forEach(h => uniq.set(h.name, h));
+  const uniq = new Map();
+  parseCSV(text).filter(r => r.ComputerName).map(toHost).forEach(h => uniq.set(h.name, h));
   days.set(d, {file:name, hosts:[...uniq.values()]});
   return true;
 }
 
-/* ---------- Laden ---------- */
-async function listCSVs(){
-  // Liest das Directory-Listing des Webservers (IIS directoryBrowse, Apache/nginx autoindex, python http.server)
-  const res = await fetch("./", {cache:"no-store"});
-  if (!res.ok) throw new Error("HTTP " + res.status);
-  const html = await res.text();
-  if (html.includes('id="drop"')) throw new Error("Webserver liefert eine Startseite statt der Verzeichnisliste – Seite nicht als index.html/default.htm ablegen");
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const set = new Set();
-  doc.querySelectorAll("a[href]").forEach(a => {
-    const href = a.getAttribute("href").split("?")[0];
-    if (/\.csv$/i.test(href)) set.add(new URL(href, location.href).href);
+/* ================= Laden ================= */
+// 1) data.js – vom Export-Skript erzeugt, funktioniert auch per file:// (Doppelklick / Netzwerkfreigabe)
+function loadDataJs(){
+  return new Promise(res => {
+    delete window.SPLA_DATA;
+    const s = document.createElement("script");
+    s.src = "data.js?t=" + Date.now();
+    s.onload = () => { s.remove(); res(window.SPLA_DATA || null); };
+    s.onerror = () => { s.remove(); res(null); };
+    document.head.appendChild(s);
   });
-  return [...set];
 }
-async function loadFromServer(){
-  days.clear();
-  if (location.protocol === "file:"){
-    msg("Seite lokal geöffnet (file://): Browser dürfen den Ordner nicht auflisten. Bitte CSV-Dateien hierher ziehen oder „CSV wählen…“ nutzen – oder den Ordner über einen Webserver ausliefern.");
-    return render();
+// 2) Directory-Listing des Webservers (IIS "Verzeichnis durchsuchen", Apache/nginx autoindex)
+async function loadListing(){
+  const r = await fetch("./", {cache:"no-store"});
+  if (!r.ok) return 0;
+  const html = await r.text();
+  if (html.includes('id="heroNum"')) return 0;   // Server liefert Startseite statt Liste
+  const urls = new Set();
+  new DOMParser().parseFromString(html, "text/html").querySelectorAll("a[href]").forEach(a => {
+    const href = a.getAttribute("href").split("?")[0];
+    if (/\.csv$/i.test(href)) urls.add(new URL(href, location.href).href);
+  });
+  let n = 0;
+  await Promise.all([...urls].map(async u => {
+    try{ const x = await fetch(u, {cache:"no-store"});
+      if (x.ok && addFile(decodeURIComponent(u.split("/").pop()), await x.text(), x.headers.get("last-modified"))) n++;
+    }catch(e){ console.warn(u, e); }
+  }));
+  return n;
+}
+async function loadAll(){
+  days.clear(); sources.clear();
+  const data = await loadDataJs();
+  if (data) for (const [name, text] of Object.entries(data)) if (addFile(name, text)) sources.add("data.js");
+  if (location.protocol.startsWith("http")){
+    try{ if (await loadListing()) sources.add("Verzeichnis"); }catch(e){ console.warn(e); }
   }
-  try{
-    const urls = await listCSVs();
-    if (!urls.length){ msg("Keine CSV-Dateien im Ordner gefunden (oder Directory-Listing auf dem Webserver deaktiviert)."); return render(); }
-    msg(`Lade ${urls.length} Dateien…`);
-    let ok = 0;
-    await Promise.all(urls.map(async u => {
-      try{
-        const r = await fetch(u, {cache:"no-store"});
-        if (r.ok && addFile(decodeURIComponent(u.split("/").pop()), await r.text(), r.headers.get("last-modified"))) ok++;
-      }catch(e){ console.warn(u, e); }
-    }));
-    msg(ok === urls.length ? "" : `${ok} von ${urls.length} Dateien geladen.`);
-  }catch(e){
-    msg("Ordner konnte nicht aufgelistet werden (" + e.message + "). Directory-Listing aktivieren oder CSV-Dateien hierher ziehen.");
-  }
+  if (!days.size) notice(location.protocol === "file:"
+    ? "Keine <code>data.js</code> gefunden. Export-Skript <code>Export-SplaData.ps1</code> ausführen – oder CSV-Dateien hierher ziehen."
+    : "Keine Daten gefunden. <code>data.js</code> fehlt und das Verzeichnis kann nicht aufgelistet werden – Export-Skript ausführen oder CSV-Dateien hierher ziehen.");
   render();
 }
 async function loadLocal(files){
-  for (const f of files) if (/\.csv$/i.test(f.name)) addFile(f.name, await f.text(), f.lastModified);
-  msg(""); render();
+  let n = 0;
+  for (const f of files) if (/\.csv$/i.test(f.name) && addFile(f.name, await f.text(), f.lastModified)) n++;
+  if (n) sources.add("manuell");
+  render();
 }
-function msg(t){ const m = $("#msg"); m.textContent = t; m.hidden = !t; }
+function notice(html){ const m = $("#msg"); m.innerHTML = html ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linecap="round"><path d="M12 3 2 21h20L12 3zM12 10v5M12 18v.01"/></svg><span>${html}</span>` : ""; m.hidden = !html; }
 
-/* ---------- Auswertung ---------- */
+/* ================= Auswertung ================= */
+const monthsList = () => [...new Set([...days.keys()].map(d => d.slice(0,7)))].sort();
+const monthLabel = (m, opt = {month:"long", year:"numeric"}) => { const [y, mo] = m.split("-"); return new Date(y, mo-1, 1).toLocaleDateString("de-CH", opt); };
+const daysInMonth = m => { const [y, mo] = m.split("-").map(Number); return new Date(y, mo, 0).getDate(); };
+const isOk = s => /^responding$/i.test(s);
+
+const aggCache = new Map();
 function monthAgg(month){
-  const dlist = [...days.keys()].filter(d => d.startsWith(month)).sort();
+  if (aggCache.has(month)) return aggCache.get(month);
+  const dl = [...days.keys()].filter(d => d.startsWith(month)).sort();
   const hosts = new Map();
-  for (const d of dlist){
+  const daily = dl.map(d => {
+    const e = {d, Datacenter:0, Standard:0, Andere:0, total:0, n:0};
     for (const h of days.get(d).hosts){
+      e[h.ed] += h.lic; e.total += h.lic; e.n++;
       let a = hosts.get(h.name);
-      if (!a){ a = {...h, peakLic:0, peakPhys:0, daysSeen:0, first:d, last:d, notResp:0}; hosts.set(h.name, a); }
-      Object.assign(a, {cluster:h.cluster || a.cluster, os:h.os, ed:h.ed, desc:h.desc, state:h.state, cpus:h.cpus, cpc:h.cpc, logical:h.logical, last:d});
-      a.peakLic = Math.max(a.peakLic, h.lic);
-      a.peakPhys = Math.max(a.peakPhys, h.phys);
-      a.daysSeen++;
-      if (!/^responding$/i.test(h.state)) a.notResp++;
+      if (!a){ a = {...h, peakLic:0, peakPhys:0, daysSeen:0, first:d, notResp:0}; hosts.set(h.name, a); }
+      Object.assign(a, {cluster:h.cluster || a.cluster, os:h.os, ed:h.ed, desc:h.desc, state:h.state, cpus:h.cpus, cpc:h.cpc, last:d});
+      a.peakLic = Math.max(a.peakLic, h.lic); a.peakPhys = Math.max(a.peakPhys, h.phys);
+      a.daysSeen++; if (!isOk(h.state)) a.notResp++;
     }
-  }
+    return e;
+  });
   const list = [...hosts.values()];
   const sum = (f, ed) => list.filter(h => !ed || h.ed === ed).reduce((s, h) => s + f(h), 0);
-  const daily = dlist.map(d => ({d, lic: days.get(d).hosts.reduce((s, h) => s + h.lic, 0), n: days.get(d).hosts.length}));
-  return {
-    month, days: dlist, daily, hosts: list,
-    lic: sum(h => h.peakLic), phys: sum(h => h.peakPhys),
-    licDC: sum(h => h.peakLic, "Datacenter"), licSTD: sum(h => h.peakLic, "Standard"), licOTH: sum(h => h.peakLic, "Andere"),
-    cpus: sum(h => h.cpus)
-  };
+  const a = {month, days:dl, daily, hosts:list, lic:sum(h => h.peakLic), phys:sum(h => h.peakPhys), cpus:sum(h => h.cpus),
+    ed:{Datacenter:sum(h => h.peakLic, "Datacenter"), Standard:sum(h => h.peakLic, "Standard"), Andere:sum(h => h.peakLic, "Andere")}};
+  aggCache.set(month, a);
+  return a;
 }
-function months(){ return [...new Set([...days.keys()].map(d => d.slice(0,7)))].sort().reverse(); }
-function monthLabel(m){ const [y, mo] = m.split("-"); return new Date(y, mo-1, 1).toLocaleDateString("de-CH", {month:"long", year:"numeric"}); }
-function daysInMonth(m){ const [y, mo] = m.split("-").map(Number); return new Date(y, mo, 0).getDate(); }
 
-/* ---------- Rendering ---------- */
+/* ================= Rendering ================= */
 function render(){
-  const ms = months(), sel = $("#month"), cur = sel.value;
-  sel.innerHTML = ms.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join("");
-  if (ms.includes(cur)) sel.value = cur;
-  if (!ms.length){ $("#kpis").innerHTML = ""; $("#chart").innerHTML = ""; $("#hosts").innerHTML = ""; $("#months").innerHTML = ""; $("#files").textContent = ""; return; }
-  const a = monthAgg(sel.value);
-  renderKPIs(a); renderChart(a); renderHosts(a); renderMonths(ms, sel.value);
-  $("#files").innerHTML = `${days.size} Tages-Exporte geladen: ` +
-    [...days.entries()].sort().map(([d, v]) => `<span title="${d}">${esc(v.file)}</span>`).join(", ");
+  aggCache.clear();
+  const ms = monthsList();
+  if (!ms.length){ ["#chips","#spark","#kpis","#chart","#split","#clusters","#hosts","#months","#files","#foot","#heroSub"].forEach(s => $(s).innerHTML = ""); $("#heroNum").textContent = "–"; return; }
+  if (!ms.includes(curMonth)) curMonth = ms[ms.length-1];
+  const a = monthAgg(curMonth), prev = ms.indexOf(curMonth) > 0 ? monthAgg(ms[ms.indexOf(curMonth)-1]) : null;
+  $("#chips").innerHTML = ms.slice().reverse().map(m => `<button class="chip${m === curMonth ? " on" : ""}" data-m="${m}">${monthLabel(m)}</button>`).join("");
+  renderHero(a, prev, ms); renderKPIs(a); renderChart(a); renderSplit(a); renderHosts(a); renderMonths(ms);
+  renderFooter(); checkFreshness();
 }
-function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function select(m){ curMonth = m; render(); }
 
+function countUp(el, to){
+  const from = parseInt(el.dataset.v || 0), t0 = performance.now(), dur = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 600;
+  el.dataset.v = to;
+  const step = t => { const p = dur ? Math.min((t - t0) / dur, 1) : 1, e = 1 - Math.pow(1 - p, 3);
+    el.textContent = fmt(from + (to - from) * e); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function deltaBadge(d, light){
+  if (d === null) return "";
+  const cls = d > 0 ? "up" : d < 0 ? "down" : "eq", txt = (d > 0 ? "▲ +" : d < 0 ? "▼ " : "± ") + fmt(d);
+  return light ? `<span class="pill">${txt} ggü. Vormonat</span>` : `<span class="badge ${cls}">${txt}</span>`;
+}
+function renderHero(a, prev, ms){
+  const running = a.month === new Date().toISOString().slice(0,7);
+  $("#eyebrow").textContent = `Zu meldende Windows-Server-Cores · ${monthLabel(a.month)}${running ? " (laufend)" : ""}`;
+  countUp($("#heroNum"), a.lic);
+  $("#heroSub").innerHTML = `<span>${fmt(a.lic/2)} × 2‑Core‑Packs</span>${deltaBadge(prev ? a.lic - prev.lic : null, true)}`;
+  // Sparkline: letzte 12 Monate
+  const last = ms.slice(-12), vals = last.map(m => monthAgg(m).lic), max = Math.max(...vals, 1);
+  const W = 380, H = 96, gap = 6, bw = Math.min(40, (W - gap * (last.length - 1)) / last.length), x0 = W - (bw + gap) * last.length + gap;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="SPLA Cores pro Monat">`;
+  last.forEach((m, i) => {
+    const h = Math.max(3, (H - 34) * vals[i] / max), x = x0 + i * (bw + gap), y = H - 16 - h, on = m === a.month;
+    s += `<g data-m="${m}"><rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="4" fill="#fff" opacity="${on ? 1 : .35}"><title>${monthLabel(m)}: ${fmt(vals[i])} Cores</title></rect>
+      <text class="lbl" x="${x + bw/2}" y="${H - 3}" text-anchor="middle">${monthLabel(m, {month:"short"})}</text>
+      ${on ? `<text class="val" x="${x + bw/2}" y="${y - 5}" text-anchor="middle">${fmt(vals[i])}</text>` : ""}</g>`;
+  });
+  $("#spark").innerHTML = s + "</svg>";
+}
+
+const ICON = {
+  dc:'<path d="M4 5h16v5H4zM4 14h16v5H4z"/><path d="M8 7.5h.01M8 16.5h.01"/>',
+  std:'<rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+  cpu:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M10 2v4M14 2v4M10 18v4M14 18v4M2 10h4M2 14h4M18 10h4M18 14h4"/>',
+  host:'<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5l2.5 8M16 7.5l-2.5 8M8.5 6h7"/>'
+};
 function renderKPIs(a){
-  const dim = daysInMonth(a.month), missing = dim - a.days.length;
-  const isCurrent = a.month === new Date().toISOString().slice(0,7);
-  const k = (l, v, s, cls = "") => `<div class="kpi ${cls}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+  const dim = daysInMonth(a.month), cov = a.days.length / dim, running = a.month === new Date().toISOString().slice(0,7);
+  const k = (icon, c, l, v, s) => `<div class="card kpi"><div class="ico" style="--c:${c};--c-soft:color-mix(in srgb,${c} 14%,transparent)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[icon]}</svg></div><div><div class="l">${l}</div><div class="v num">${v}</div><div class="s">${s}</div></div></div>`;
+  const C = 2 * Math.PI * 18, ringCol = cov >= 1 ? "var(--good)" : running ? "var(--s1)" : "var(--warn)";
   $("#kpis").innerHTML =
-    k("SPLA Cores (Total)", fmt(a.lic), `${fmt(a.lic/2)} × 2‑Core‑Packs`, "main") +
-    k("Datacenter Cores", fmt(a.licDC), `${fmt(a.licDC/2)} × 2‑Core‑Packs`) +
-    k("Standard Cores", fmt(a.licSTD), `${fmt(a.licSTD/2)} × 2‑Core‑Packs` + (a.licOTH ? ` · <span class="warn">${fmt(a.licOTH)} andere</span>` : "")) +
-    k("Physische Cores", fmt(a.phys), `${fmt(a.lic - a.phys)} Cores durch Mindestlizenzierung`) +
-    k("Hosts", fmt(a.hosts.length), `${fmt(a.cpus)} CPUs`) +
-    k("Tages-Exporte", `${a.days.length}/${dim}`,
-      missing ? `<span class="${isCurrent ? "muted" : "warn"}">${isCurrent ? "laufender Monat" : missing + " Tage fehlen"}</span>` : "vollständig");
+    k("dc", "var(--s1)", "Datacenter", fmt(a.ed.Datacenter), `${fmt(a.ed.Datacenter/2)} × 2‑Core‑Packs`) +
+    k("std", "var(--s2)", "Standard", fmt(a.ed.Standard), `${fmt(a.ed.Standard/2)} × 2‑Core‑Packs` + (a.ed.Andere ? ` · ${fmt(a.ed.Andere)} andere` : "")) +
+    k("cpu", "var(--s4)", "Physische Cores", fmt(a.phys), a.lic > a.phys ? `+${fmt(a.lic - a.phys)} durch Mindestlizenzierung` : "keine Mindestlizenz-Aufschläge") +
+    k("host", "var(--good)", "Hosts", fmt(a.hosts.length), `${fmt(a.cpus)} Prozessoren`) +
+    `<div class="card kpi"><svg class="ring" width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" stroke="var(--surface2)"/><circle cx="22" cy="22" r="18" stroke="${ringCol}" stroke-linecap="round" stroke-dasharray="${C*cov} ${C}" transform="rotate(-90 22 22)"/></svg>
+      <div><div class="l">Tages-Exporte</div><div class="v num">${a.days.length}<span class="muted" style="font-size:16px;font-weight:500"> / ${dim}</span></div>
+      <div class="s">${cov >= 1 ? "vollständig" : running ? "laufender Monat" : `<span style="color:var(--warn)">${dim - a.days.length} Tage fehlen</span>`}</div></div></div>`;
 }
 
-function renderChart(a){
-  const [y, mo] = a.month.split("-").map(Number), dim = daysInMonth(a.month);
-  const byDay = new Map(a.daily.map(x => [x.d, x]));
-  const max = Math.max(a.lic, ...a.daily.map(x => x.lic), 1);
-  const W = 900, H = 220, L = 44, B = 22, T = 22, bw = (W - L) / dim;
-  const yv = v => T + (H - T - B) * (1 - v / max);
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lizenzpflichtige Cores pro Tag">`;
-  const step = niceStep(max);
-  for (let v = 0; v <= max; v += step) s += `<line x1="${L}" x2="${W}" y1="${yv(v)}" y2="${yv(v)}"/><text x="${L-6}" y="${yv(v)+3}" text-anchor="end">${fmt(v)}</text>`;
-  for (let i = 1; i <= dim; i++){
-    const d = `${a.month}-${String(i).padStart(2,"0")}`, x = L + (i-1) * bw, e = byDay.get(d);
-    if (e) s += `<rect class="bar${e.lic < a.lic ? " dim" : ""}" x="${x+1}" y="${yv(e.lic)}" width="${Math.max(bw-2,1)}" height="${H-B-yv(e.lic)}"><title>${new Date(y,mo-1,i).toLocaleDateString("de-CH")}: ${fmt(e.lic)} Cores · ${e.n} Hosts</title></rect>`;
-    if (i === 1 || i % 5 === 0) s += `<text x="${x+bw/2}" y="${H-6}" text-anchor="middle">${i}.</text>`;
-  }
-  s += `<line x1="${L}" x2="${W}" y1="${yv(a.lic)}" y2="${yv(a.lic)}" style="stroke:var(--fg);stroke-dasharray:4 3"/>`;
-  s += `<text x="${W-2}" y="${yv(a.lic)-4}" text-anchor="end" style="fill:var(--fg)">Monatswert ${fmt(a.lic)}</text></svg>`;
-  $("#chart").innerHTML = s;
-  $("#chartsub").textContent = `· ${monthLabel(a.month)} · gestrichelt = Summe der Peaks pro Host (Reporting-Wert)`;
-}
 function niceStep(max){ const r = max / 4, p = Math.pow(10, Math.floor(Math.log10(r))); return [1,2,5,10].map(m => m*p).find(s => s >= r); }
-
-const cols = [
-  ["name","Host"],["cluster","Cluster"],["ed","Edition"],["os","Betriebssystem"],
-  ["cpus","CPUs","n"],["cpc","Cores/CPU","n"],["peakPhys","Phys. Cores","n"],["peakLic","SPLA Cores","n"],
-  ["daysSeen","Tage","n"],["state","Status"]
-];
-function renderHosts(a){
-  const {key, dir} = sortState, k = key === "lic" ? "peakLic" : key;
-  const list = [...a.hosts].sort((x, y) => (typeof x[k] === "number" ? x[k] - y[k] : String(x[k]).localeCompare(String(y[k]))) * dir || x.name.localeCompare(y.name));
-  const edTag = e => `<span class="tag ${e === "Datacenter" ? "dc" : e === "Standard" ? "std" : "oth"}">${e}</span>`;
-  let h = `<thead><tr>${cols.map(([c, l, n]) => `<th class="${n||""}" data-k="${c}">${l}${k === c ? (dir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}</tr></thead><tbody>`;
-  for (const x of list){
-    const minNote = x.peakLic > x.peakPhys ? ` <span class="muted" title="Mindestlizenzierung">(min.)</span>` : "";
-    const partial = x.daysSeen < a.days.length ? ` <span class="muted" title="${x.first} – ${x.last}">${x.first.slice(8)}.–${x.last.slice(8)}.</span>` : "";
-    const st = esc(x.state) + (x.notResp ? ` <span class="${/^responding$/i.test(x.state) ? "muted" : "bad"}" title="An ${x.notResp} Tag(en) nicht 'Responding'">(${x.notResp}× n.r.)</span>` : "");
-    h += `<tr><td>${esc(x.name)}</td><td>${esc(x.cluster) || '<span class="muted">Standalone</span>'}</td><td>${edTag(x.ed)}</td><td>${esc(x.os)}</td>
-      <td class="n">${x.cpus}</td><td class="n">${x.cpc}</td><td class="n">${fmt(x.peakPhys)}</td><td class="n"><b>${fmt(x.peakLic)}</b>${minNote}</td>
-      <td class="n">${x.daysSeen}${partial}</td><td>${st}</td></tr>`;
+function topRounded(x, y, w, h, r){
+  r = Math.min(r, w/2, h); if (h <= 0) return "";
+  return `M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`;
+}
+function renderChart(a){
+  const dim = daysInMonth(a.month), byDay = new Map(a.daily.map(x => [x.d, x]));
+  const step = niceStep(Math.max(a.lic, 1)), max = Math.ceil(Math.max(a.lic, ...a.daily.map(x => x.total), 1) * 1.08 / step) * step;
+  const W = 820, H = 280, L = 40, B = 24, T = 16, bw = (W - L) / dim, ih = H - T - B;
+  const yv = v => T + ih * (1 - v / max);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lizenzpflichtige Cores pro Tag">`;
+  for (let v = 0; v <= max; v += step) s += `<line class="grid" x1="${L}" x2="${W}" y1="${yv(v)}" y2="${yv(v)}"/><text class="ax num" x="${L-8}" y="${yv(v)+4}" text-anchor="end">${fmt(v)}</text>`;
+  let hits = "";
+  for (let i = 1; i <= dim; i++){
+    const d = `${a.month}-${String(i).padStart(2,"0")}`, x = L + (i-1) * bw + 1.5, w = Math.max(bw - 3, 1), e = byDay.get(d);
+    if (e){
+      const segs = ["Datacenter","Standard","Andere"].filter(k => e[k] > 0);
+      let base = 0;
+      segs.forEach((k, j) => {
+        const y1 = yv(base + e[k]), y0 = yv(base), gap = j ? 2 : 0;   // 2px Abstand zwischen Segmenten
+        const h = y0 - y1 - gap;
+        s += j === segs.length - 1 ? `<path d="${topRounded(x, y1, w, h, 3)}" fill="${ED[k]}"/>` : `<rect x="${x}" y="${y1}" width="${w}" height="${h}" fill="${ED[k]}"/>`;
+        base += e[k];
+      });
+      hits += `<rect class="hit" data-d="${d}" x="${L + (i-1) * bw}" y="${T}" width="${bw}" height="${ih}"/>`;
+    }
+    if (i === 1 || i % 5 === 0) s += `<text class="ax" x="${L + (i-.5) * bw}" y="${H-6}" text-anchor="middle">${i}.</text>`;
   }
-  h += `</tbody><tfoot><tr><td colspan="4">Total ${a.hosts.length} Hosts</td><td class="n">${fmt(a.cpus)}</td><td></td><td class="n">${fmt(a.phys)}</td><td class="n">${fmt(a.lic)}</td><td colspan="2"></td></tr></tfoot>`;
+  s += `<line class="peak" x1="${L}" x2="${W}" y1="${yv(a.lic)}" y2="${yv(a.lic)}"/><text class="peaklbl num" x="${W}" y="${yv(a.lic)-6}" text-anchor="end">Monatswert ${fmt(a.lic)}</text>`;
+  $("#chart").innerHTML = s + hits + "</svg>";
+  $("#chartsub").textContent = `${monthLabel(a.month)} · gestrichelt: Summe der Peaks pro Host = Reporting-Wert`;
+  $("#lgOth").hidden = !a.ed.Andere;
+  $("#chart").onmousemove = ev => {
+    const d = ev.target.dataset?.d; if (!d) return hideTip();
+    const e = byDay.get(d), row = (c, l, v) => v ? `<div class="r"><span><i style="background:${c}"></i>${l}</span><b class="num">${fmt(v)}</b></div>` : "";
+    showTip(ev, `<div class="t">${new Date(d).toLocaleDateString("de-CH", {weekday:"short", day:"numeric", month:"long"})}</div>
+      ${row(ED.Datacenter, "Datacenter", e.Datacenter)}${row(ED.Standard, "Standard", e.Standard)}${row(ED.Andere, "Andere", e.Andere)}
+      <div class="r" style="border-top:1px solid var(--line);margin-top:4px;padding-top:4px"><span>Total · ${e.n} Hosts</span><b class="num">${fmt(e.total)}</b></div>`);
+  };
+  $("#chart").onmouseleave = hideTip;
+}
+function showTip(ev, html){
+  const t = $("#tip"); t.innerHTML = html; t.classList.add("on");
+  const r = t.getBoundingClientRect(), x = ev.clientX + 16 + r.width > innerWidth ? ev.clientX - r.width - 16 : ev.clientX + 16;
+  t.style.left = x + "px"; t.style.top = Math.max(8, ev.clientY - r.height / 2) + "px";
+}
+function hideTip(){ $("#tip").classList.remove("on"); }
+
+function renderSplit(a){
+  const tot = a.lic || 1, eds = Object.entries(a.ed).filter(([, v]) => v);
+  $("#split").innerHTML = `<div class="split">${eds.map(([k, v]) => `<b style="width:${v/tot*100}%;background:${ED[k]}" title="${k}: ${fmt(v)}"></b>`).join("")}</div>
+    <div class="legend">${eds.map(([k, v]) => `<span><i style="background:${ED[k]}"></i>${k} <b class="num">${Math.round(v/tot*100)}%</b></span>`).join("")}</div>`;
+  const cl = new Map();
+  for (const h of a.hosts){
+    const k = h.cluster || "Standalone", c = cl.get(k) || {name:k, n:0, total:0, Datacenter:0, Standard:0, Andere:0};
+    c.n++; c.total += h.peakLic; c[h.ed] += h.peakLic; cl.set(k, c);
+  }
+  const list = [...cl.values()].sort((x, y) => (x.name === "Standalone") - (y.name === "Standalone") || y.total - x.total);
+  const max = Math.max(...list.map(c => c.total), 1);
+  $("#clusters").innerHTML = list.map(c => `<div class="crow">
+      <div class="top2"><span title="${esc(c.name)}">${esc(c.name.split(".")[0])}</span><b class="num">${fmt(c.total)}</b></div>
+      <div class="track" style="width:${Math.max(c.total/max*100, 2)}%">${["Datacenter","Standard","Andere"].filter(k => c[k]).map(k => `<b style="flex:${c[k]};background:${ED[k]}"></b>`).join("")}</div>
+      <div class="meta">${c.n} Host${c.n > 1 ? "s" : ""}${c.name.includes(".") ? " · " + esc(c.name.split(".").slice(1).join(".")) : ""}</div></div>`).join("");
+}
+
+const cols = [["name","Host"],["cluster","Cluster"],["ed","Edition"],["cpus","CPU","n"],["peakPhys","Phys.","n"],["peakLic","SPLA Cores","n"],["daysSeen","Tage","n"],["state","Status"]];
+function renderHosts(a){
+  const {key, dir} = sortState, maxLic = Math.max(...a.hosts.map(h => h.peakLic), 1);
+  const ql = query.toLowerCase();
+  const list = a.hosts.filter(h => !ql || [h.name, h.cluster, h.os, h.desc, h.ed].join(" ").toLowerCase().includes(ql))
+    .sort((x, y) => (typeof x[key] === "number" ? x[key] - y[key] : String(x[key]).localeCompare(String(y[key]))) * dir || x.name.localeCompare(y.name));
+  let h = `<thead><tr>${cols.map(([c, l, n]) => `<th class="${n||""}" data-k="${c}">${l}${key === c ? (dir > 0 ? " ↑" : " ↓") : ""}</th>`).join("")}</tr></thead><tbody>`;
+  for (const x of list){
+    const dot = !isOk(x.state) ? "crit" : x.notResp ? "warn" : "";
+    const partial = x.daysSeen < a.days.length ? `<small class="muted">${+x.first.slice(8)}.–${+x.last.slice(8)}.</small>` : "";
+    h += `<tr>
+      <td class="host"><span class="dot ${dot}"></span><b>${esc(x.name)}</b><small style="margin-left:16px">${esc(x.os.replace(/^Microsoft\s+/i, ""))}${x.desc ? " · " + esc(x.desc) : ""}</small></td>
+      <td class="cl">${x.cluster ? esc(x.cluster.split(".")[0]) : '<span class="muted">Standalone</span>'}</td>
+      <td><span class="tag"><i style="background:${ED[x.ed]}"></i>${x.ed}</span></td>
+      <td class="n">${x.cpus} × ${x.cpc}</td>
+      <td class="n">${fmt(x.peakPhys)}</td>
+      <td class="n"><div class="barcell">${x.peakLic > x.peakPhys ? '<span class="minnote" title="Mindestlizenzierung (8 pro CPU / 16 pro Server)">MIN</span>' : ""}<div class="minibar"><b style="width:${x.peakLic/maxLic*100}%;background:${ED[x.ed]}"></b></div><b class="num" style="min-width:2.5em">${fmt(x.peakLic)}</b></div></td>
+      <td class="n">${x.daysSeen}${partial ? "<br>" + partial : ""}</td>
+      <td>${esc(x.state)}${x.notResp ? ` <small class="muted" title="An ${x.notResp} Tag(en) nicht 'Responding'">(${x.notResp}× n.r.)</small>` : ""}</td></tr>`;
+  }
+  const sum = f => list.reduce((s, x) => s + f(x), 0);
+  h += `</tbody><tfoot><tr><td colspan="3">${list.length === a.hosts.length ? "Total" : "Gefiltert"} · ${list.length} Hosts</td><td class="n">${fmt(sum(x => x.cpus))} CPUs</td><td class="n">${fmt(sum(x => x.peakPhys))}</td><td class="n">${fmt(sum(x => x.peakLic))}</td><td colspan="2"></td></tr></tfoot>`;
   $("#hosts").innerHTML = h;
-  $("#hostsub").textContent = `· ${monthLabel(a.month)} · Spalten anklicken zum Sortieren`;
+  $("#hostsub").textContent = `${monthLabel(a.month)} · Peak pro Host · Spaltenkopf klicken zum Sortieren`;
   $("#hosts thead").onclick = e => {
     const c = e.target.closest("th")?.dataset.k; if (!c) return;
-    const kk = c === "peakLic" ? "lic" : c;
-    sortState = {key:kk, dir: sortState.key === kk ? -sortState.dir : (typeof a.hosts[0]?.[c] === "number" ? -1 : 1)};
+    sortState = {key:c, dir: sortState.key === c ? -sortState.dir : (typeof a.hosts[0]?.[c] === "number" ? -1 : 1)};
     renderHosts(a);
   };
 }
 
-function renderMonths(ms, cur){
-  let h = `<thead><tr><th>Monat</th><th class="n">Exporte</th><th class="n">Hosts</th><th class="n">Phys. Cores</th><th class="n">Datacenter</th><th class="n">Standard</th><th class="n">SPLA Cores</th><th class="n">2‑Core‑Packs</th><th class="n">Δ Vormonat</th></tr></thead><tbody>`;
-  const aggs = ms.map(monthAgg);
+function renderMonths(ms){
+  const aggs = ms.map(monthAgg).reverse(), max = Math.max(...aggs.map(a => a.lic), 1);
+  let h = `<thead><tr><th>Monat</th><th class="n">Exporte</th><th class="n">Hosts</th><th class="n">Phys.</th><th class="n">Datacenter</th><th class="n">Standard</th><th class="n">SPLA Cores</th><th class="n">Packs</th><th class="n">Δ Vormonat</th></tr></thead><tbody>`;
   aggs.forEach((a, i) => {
-    const prev = aggs[i+1], d = prev ? a.lic - prev.lic : null;
-    h += `<tr class="click${a.month === cur ? " sel" : ""}" data-m="${a.month}"><td>${monthLabel(a.month)}</td><td class="n">${a.days.length}/${daysInMonth(a.month)}</td><td class="n">${a.hosts.length}</td><td class="n">${fmt(a.phys)}</td>
-      <td class="n">${fmt(a.licDC)}</td><td class="n">${fmt(a.licSTD)}</td><td class="n"><b>${fmt(a.lic)}</b></td><td class="n">${fmt(a.lic/2)}</td>
-      <td class="n ${d > 0 ? "warn" : d < 0 ? "muted" : ""}">${d === null ? "–" : (d > 0 ? "+" : "") + fmt(d)}</td></tr>`;
+    const prev = aggs[i+1], full = a.days.length >= daysInMonth(a.month);
+    h += `<tr class="click${a.month === curMonth ? " sel" : ""}" data-m="${a.month}">
+      <td><b>${monthLabel(a.month)}</b></td>
+      <td class="n ${full ? "" : "muted"}">${a.days.length}/${daysInMonth(a.month)}</td>
+      <td class="n">${a.hosts.length}</td><td class="n">${fmt(a.phys)}</td>
+      <td class="n">${fmt(a.ed.Datacenter)}</td><td class="n">${fmt(a.ed.Standard)}</td>
+      <td class="n"><div class="barcell"><div class="minibar"><b style="width:${a.lic/max*100}%"></b></div><b class="num" style="min-width:2.5em">${fmt(a.lic)}</b></div></td>
+      <td class="n">${fmt(a.lic/2)}</td>
+      <td class="n">${prev ? deltaBadge(a.lic - prev.lic) : '<span class="muted">–</span>'}</td></tr>`;
   });
   $("#months").innerHTML = h + "</tbody>";
-  $("#months tbody").onclick = e => { const m = e.target.closest("tr")?.dataset.m; if (m){ $("#month").value = m; render(); scrollTo({top:0, behavior:"smooth"}); } };
 }
 
-function exportCSV(){
-  const m = $("#month").value; if (!m) return;
-  const a = monthAgg(m), q = v => `"${String(v).replace(/"/g,'""')}"`;
-  const lines = [["Monat","Host","Cluster","Edition","OperatingSystem","CPUs","CoresPerCPU","PhysCores","SPLACores","CorePacks2","TageGesehen","ErsterTag","LetzterTag"].map(q).join(";")];
-  a.hosts.sort((x, y) => x.name.localeCompare(y.name)).forEach(h => lines.push([m,h.name,h.cluster,h.ed,h.os,h.cpus,h.cpc,h.peakPhys,h.peakLic,h.peakLic/2,h.daysSeen,h.first,h.last].map(q).join(";")));
-  lines.push(["TOTAL","","","Datacenter","",a.cpus,"",a.phys,a.licDC,a.licDC/2,"","",""].map(q).join(";"));
-  lines.push(["TOTAL","","","Standard","","","","",a.licSTD,a.licSTD/2,"","",""].map(q).join(";"));
-  lines.push(["TOTAL","","","Alle","","","","",a.lic,a.lic/2,"","",""].map(q).join(";"));
-  const blob = new Blob(["﻿" + lines.join("\r\n")], {type:"text/csv"});
-  const link = Object.assign(document.createElement("a"), {href: URL.createObjectURL(blob), download: `SPLA_Report_${m}.csv`});
-  link.click(); URL.revokeObjectURL(link.href);
+function renderFooter(){
+  const all = [...days.keys()].sort(), lastD = all[all.length-1];
+  $("#files").innerHTML = `<p>${days.size} Tages-Exporte: ` + all.map(d => esc(days.get(d).file)).join(", ") + "</p>";
+  $("#foot").innerHTML = `Quelle: ${[...sources].join(" + ") || "–"} · ${days.size} Tages-Exporte · letzter Export ${new Date(lastD).toLocaleDateString("de-CH")} · geladen ${new Date().toLocaleString("de-CH", {dateStyle:"short", timeStyle:"short"})}`;
+}
+function checkFreshness(){
+  const all = [...days.keys()].sort(), lastD = all[all.length-1];
+  const age = Math.floor((new Date().setHours(0,0,0,0) - new Date(lastD + "T00:00").getTime()) / 864e5);
+  notice(age > 1 ? `Letzter Tages-Export ist vom <b>${new Date(lastD).toLocaleDateString("de-CH")}</b> (vor ${age} Tagen) – läuft der tägliche Export noch?` : "");
 }
 
-/* ---------- Events ---------- */
-$("#month").onchange = render;
-$("#reload").onclick = loadFromServer;
-$("#exp").onclick = exportCSV;
+/* ================= Events ================= */
+$("#chips").onclick = e => { const m = e.target.closest("[data-m]")?.dataset.m; if (m) select(m); };
+$("#spark").onclick = e => { const m = e.target.closest("[data-m]")?.dataset.m; if (m) select(m); };
+$("#months").onclick = e => { const m = e.target.closest("tr[data-m]")?.dataset.m; if (m){ select(m); scrollTo({top:0, behavior:"smooth"}); } };
+$("#q").oninput = e => { query = e.target.value; renderHosts(monthAgg(curMonth)); };
+$("#reload").onclick = loadAll;
 $("#pick").onclick = () => $("#file").click();
 $("#file").onchange = e => loadLocal(e.target.files);
-const drop = $("#drop");
-drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
-drop.addEventListener("dragleave", e => { if (e.target === drop) drop.classList.remove("over"); });
-drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); loadLocal(e.dataTransfer.files); });
-loadFromServer();
+$("#exp").onclick = () => {
+  if (!curMonth) return;
+  const a = monthAgg(curMonth), q = v => `"${String(v).replace(/"/g,'""')}"`;
+  const L = [["Monat","Host","Cluster","Edition","OperatingSystem","CPUs","CoresPerCPU","PhysCores","SPLACores","CorePacks2","TageGesehen","ErsterTag","LetzterTag"]];
+  a.hosts.slice().sort((x, y) => x.name.localeCompare(y.name)).forEach(h => L.push([curMonth,h.name,h.cluster,h.ed,h.os,h.cpus,h.cpc,h.peakPhys,h.peakLic,h.peakLic/2,h.daysSeen,h.first,h.last]));
+  for (const k of ["Datacenter","Standard","Andere"]) if (a.ed[k]) L.push(["TOTAL","","",k,"","","","",a.ed[k],a.ed[k]/2,"","",""]);
+  L.push(["TOTAL","","","Alle","",a.cpus,"",a.phys,a.lic,a.lic/2,"","",""]);
+  const link = Object.assign(document.createElement("a"), {href:URL.createObjectURL(new Blob(["﻿" + L.map(r => r.map(q).join(";")).join("\r\n")], {type:"text/csv"})), download:`SPLA_Report_${curMonth}.csv`});
+  link.click(); URL.revokeObjectURL(link.href);
+};
+let dragDepth = 0;
+addEventListener("dragenter", e => { e.preventDefault(); if (++dragDepth === 1) document.body.classList.add("over"); });
+addEventListener("dragleave", () => { if (--dragDepth === 0) document.body.classList.remove("over"); });
+addEventListener("dragover", e => e.preventDefault());
+addEventListener("drop", e => { e.preventDefault(); dragDepth = 0; document.body.classList.remove("over"); loadLocal(e.dataTransfer.files); });
+loadAll();
 </script>
 </body>
 </html>
