@@ -148,6 +148,17 @@ footer{color:var(--muted);font-size:12px;padding:0 0 32px}
 .tip .r span:first-child{color:var(--text2)}
 .tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
 
+body.empty .hero-main,body.empty main>section:not(#welcome),body.empty footer{display:none}
+body.empty .hero{padding-bottom:80px}
+body.empty #exp{display:none}
+.welcome{text-align:center;padding:44px 24px}
+.welcome .wico{width:64px;height:64px;border-radius:18px;margin:0 auto 14px;display:grid;place-items:center;background:var(--s1soft);color:var(--s1)}
+.welcome h2{justify-content:center;font-size:20px;margin-bottom:6px}
+.welcome p{color:var(--text2);max-width:560px;margin:6px auto}
+.welcome .small{color:var(--muted);font-size:12.5px}
+.bigbtn{display:inline-flex;gap:8px;align-items:center;margin:18px 0 8px;background:var(--s1);color:#fff;border:0;border-radius:11px;padding:12px 22px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px color-mix(in srgb,var(--s1) 35%,transparent)}
+.bigbtn:hover{filter:brightness(1.08)}
+.linkbtn{background:none;border:0;color:var(--s1);cursor:pointer;text-decoration:underline;padding:0}
 body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;border:3px dashed #fff;border-radius:18px;background:#163d82cc;color:#fff;display:grid;place-items:center;font-size:22px;font-weight:600;z-index:20}
 @media (max-width:600px){.wrap{padding:0 16px}.tbl{margin:0 -16px;padding:0 16px}.search input{width:120px}.card{padding:16px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -163,9 +174,9 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
       </div>
       <div class="actions">
         <button class="hbtn" id="exp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Monatsreport</button>
-        <button class="hbtn" id="reload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Neu laden</button>
-        <button class="hbtn" id="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7v12h16V9h-8l-2-2H4z"/></svg>CSV laden</button>
-        <input id="file" type="file" accept=".csv" multiple hidden>
+        <button class="hbtn" id="reload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Neu einlesen</button>
+        <button class="hbtn" id="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7v12h16V9h-8l-2-2H4z"/></svg>Ordner wählen</button>
+        <input id="dir" type="file" webkitdirectory multiple hidden>
       </div>
     </div>
     <nav class="chips" id="chips" aria-label="Monat wählen"></nav>
@@ -182,6 +193,7 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
 
 <main class="wrap">
   <div class="notice" id="msg" hidden></div>
+  <section class="card welcome" id="welcome" hidden></section>
   <section class="kpis" id="kpis"></section>
 
   <section class="grid2">
@@ -221,7 +233,7 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
         <li>Monatswert pro Host = Höchststand aller Tages-Exporte im Monat. Ein Host zählt, sobald er an einem Tag auftaucht.</li>
         <li>Edition aus <code>OperatingSystem</code> (Datacenter / Standard), massgebend ist der letzte Tag im Monat.</li>
         <li>Datum aus dem Dateinamen (<code>…_JJJJMMTT.csv</code>). Mehrere Dateien am selben Tag: die letzte gewinnt.</li>
-        <li>Datenquelle: <code>data.js</code> (vom Export-Skript erzeugt, funktioniert auch ohne Webserver), zusätzlich – falls vorhanden – das Directory-Listing des Webservers oder manuell geladene Dateien.</li>
+        <li>Datenquelle: der Ordner mit den CSV-Exporten. Beim Start automatisch über die Verzeichnisliste des Webservers oder den im Browser gemerkten Ordner (Edge/Chrome), sonst über „Ordner wählen“ oder Drag &amp; Drop.</li>
       </ul>
       <div id="files"></div>
     </details>
@@ -286,18 +298,30 @@ function addFile(name, text, lastMod){
 }
 
 /* ================= Laden ================= */
-// 1) data.js – vom Export-Skript erzeugt, funktioniert auch per file:// (Doppelklick / Netzwerkfreigabe)
-function loadDataJs(){
-  return new Promise(res => {
-    delete window.SPLA_DATA;
-    const s = document.createElement("script");
-    s.src = "data.js?t=" + Date.now();
-    s.onload = () => { s.remove(); res(window.SPLA_DATA || null); };
-    s.onerror = () => { s.remove(); res(null); };
-    document.head.appendChild(s);
+// Reihenfolge beim Start:
+//   1) Verzeichnisliste des Webservers (IIS "Verzeichnis durchsuchen", Apache/nginx autoindex)
+//   2) im Browser gemerkter Ordner (File System Access API, Edge/Chrome) – auch per Doppelklick (file://)
+//   3) sonst Startkarte mit "Ordner wählen" bzw. Drag & Drop
+const canPick = "showDirectoryPicker" in window;
+const isHttp = location.protocol.startsWith("http");
+let dirHandle = null;
+
+function kv(mode, fn){
+  return new Promise((res, rej) => {
+    const o = indexedDB.open("spla-dashboard", 1);
+    o.onupgradeneeded = () => o.result.createObjectStore("kv");
+    o.onerror = () => rej(o.error);
+    o.onsuccess = () => {
+      try{
+        const tx = o.result.transaction("kv", mode), r = fn(tx.objectStore("kv"));
+        tx.oncomplete = () => res(r.result); tx.onerror = () => rej(tx.error);
+      }catch(e){ rej(e); }
+    };
   });
 }
-// 2) Directory-Listing des Webservers (IIS "Verzeichnis durchsuchen", Apache/nginx autoindex)
+const loadHandle = () => kv("readonly", st => st.get("dir")).catch(() => null);
+const saveHandle = h => kv("readwrite", st => st.put(h, "dir")).catch(e => console.warn("Ordner kann nicht gemerkt werden", e));
+
 async function loadListing(){
   const r = await fetch("./", {cache:"no-store"});
   if (!r.ok) return 0;
@@ -316,25 +340,76 @@ async function loadListing(){
   }));
   return n;
 }
-async function loadAll(){
-  days.clear(); sources.clear();
-  const data = await loadDataJs();
-  if (data) for (const [name, text] of Object.entries(data)) if (addFile(name, text)) sources.add("data.js");
-  if (location.protocol.startsWith("http")){
-    try{ if (await loadListing()) sources.add("Verzeichnis"); }catch(e){ console.warn(e); }
+async function readDir(h){
+  let n = 0;
+  for await (const e of h.values())
+    if (e.kind === "file" && /\.csv$/i.test(e.name)){
+      const f = await e.getFile();
+      if (addFile(e.name, await f.text(), f.lastModified)) n++;
+    }
+  return n;
+}
+const reset = () => { days.clear(); sources.clear(); };
+const dirLabel = h => `Ordner „${h.name}“`;
+function done(src){ if (src) sources.add(src); render(); }
+
+// Beim Start: alles einlesen, was ohne Klick möglich ist
+async function init(){
+  reset();
+  if (isHttp){ try{ if (await loadListing()) return done("Webserver-Verzeichnis"); }catch(e){ console.warn(e); } }
+  if (canPick){
+    dirHandle = await loadHandle();
+    try{
+      if (dirHandle && await dirHandle.queryPermission({mode:"read"}) === "granted" && await readDir(dirHandle)) return done(dirLabel(dirHandle));
+    }catch(e){ console.warn(e); }
   }
-  if (!days.size) notice(location.protocol === "file:"
-    ? "Keine <code>data.js</code> gefunden. Export-Skript <code>Export-SplaData.ps1</code> ausführen – oder CSV-Dateien hierher ziehen."
-    : "Keine Daten gefunden. <code>data.js</code> fehlt und das Verzeichnis kann nicht aufgelistet werden – Export-Skript ausführen oder CSV-Dateien hierher ziehen.");
   render();
 }
-async function loadLocal(files){
+// Button "Neu einlesen": der Klick erlaubt dem Browser den erneuten Ordnerzugriff
+async function reread(){
+  if (dirHandle){
+    try{
+      if (await dirHandle.requestPermission({mode:"read"}) === "granted"){ reset(); await readDir(dirHandle); return done(dirLabel(dirHandle)); }
+    }catch(e){ console.warn(e); }
+  }
+  if (isHttp){ try{ reset(); if (await loadListing()) return done("Webserver-Verzeichnis"); }catch(e){ console.warn(e); } }
+  pickFolder();
+}
+// Button "Ordner wählen": Edge/Chrome merken sich den Ordner, andere Browser fragen jedes Mal
+async function pickFolder(){
+  if (!canPick) return $("#dir").click();
+  try{
+    const h = await showDirectoryPicker({id:"spla", mode:"read"});
+    dirHandle = h; saveHandle(h); reset();
+    const n = await readDir(h);
+    done(n && dirLabel(h));
+    if (!n) notice(`Im Ordner „${esc(h.name)}“ liegen keine CSV-Dateien.`);
+  }catch(e){ if (e.name !== "AbortError") notice("Ordner konnte nicht gelesen werden: " + esc(e.message)); }
+}
+async function loadLocal(files, label = "manuell"){
   let n = 0;
   for (const f of files) if (/\.csv$/i.test(f.name) && addFile(f.name, await f.text(), f.lastModified)) n++;
-  if (n) sources.add("manuell");
+  if (n) sources.add(label);
   render();
 }
 function notice(html){ const m = $("#msg"); m.innerHTML = html ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linecap="round"><path d="M12 3 2 21h20L12 3zM12 10v5M12 18v.01"/></svg><span>${html}</span>` : ""; m.hidden = !html; }
+
+function renderWelcome(){
+  const known = dirHandle && canPick;
+  $("#welcome").innerHTML = `
+    <div class="wico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-8l-2-2H4a1 1 0 0 0-1 1z"/><path d="M12 11v5m0 0-2-2m2 2 2-2"/></svg></div>
+    <h2>${known ? "Daten neu einlesen" : "CSV-Ordner verbinden"}</h2>
+    <p>${known
+      ? `Der Browser braucht deine Bestätigung, um den Ordner <b>„${esc(dirHandle.name)}“</b> erneut zu lesen.`
+      : "Wähle den Ordner, in dem die täglichen VMM-Exporte landen."}</p>
+    <button class="bigbtn" id="wbtn">${known ? `„${esc(dirHandle.name)}“ einlesen` : "Ordner wählen"}</button>
+    <p class="small">${canPick
+      ? (known ? `<button class="linkbtn" id="wother">Anderen Ordner wählen</button> · ` : "") + "Der Browser merkt sich den Ordner und liest ihn bei den nächsten Starts automatisch ein (bzw. mit einem Klick)."
+      : "Dieser Browser kann sich den Ordner nicht merken (Edge und Chrome können das) – die Auswahl ist bei jedem Besuch nötig."}
+      <br>Oder CSV-Dateien einfach auf diese Seite ziehen.</p>`;
+  $("#wbtn").onclick = known ? reread : pickFolder;
+  if ($("#wother")) $("#wother").onclick = pickFolder;
+}
 
 /* ================= Auswertung ================= */
 const monthsList = () => [...new Set([...days.keys()].map(d => d.slice(0,7)))].sort();
@@ -371,7 +446,9 @@ function monthAgg(month){
 function render(){
   aggCache.clear();
   const ms = monthsList();
-  if (!ms.length){ ["#chips","#spark","#kpis","#chart","#split","#clusters","#hosts","#months","#files","#foot","#heroSub"].forEach(s => $(s).innerHTML = ""); $("#heroNum").textContent = "–"; return; }
+  document.body.classList.toggle("empty", !ms.length);
+  $("#welcome").hidden = !!ms.length;
+  if (!ms.length){ renderWelcome(); ["#chips","#spark","#kpis","#chart","#split","#clusters","#hosts","#months","#files","#foot","#heroSub"].forEach(s => $(s).innerHTML = ""); $("#heroNum").textContent = "–"; return; }
   if (!ms.includes(curMonth)) curMonth = ms[ms.length-1];
   const a = monthAgg(curMonth), prev = ms.indexOf(curMonth) > 0 ? monthAgg(ms[ms.indexOf(curMonth)-1]) : null;
   $("#chips").innerHTML = ms.slice().reverse().map(m => `<button class="chip${m === curMonth ? " on" : ""}" data-m="${m}">${monthLabel(m)}</button>`).join("");
@@ -559,9 +636,9 @@ $("#chips").onclick = e => { const m = e.target.closest("[data-m]")?.dataset.m; 
 $("#spark").onclick = e => { const m = e.target.closest("[data-m]")?.dataset.m; if (m) select(m); };
 $("#months").onclick = e => { const m = e.target.closest("tr[data-m]")?.dataset.m; if (m){ select(m); scrollTo({top:0, behavior:"smooth"}); } };
 $("#q").oninput = e => { query = e.target.value; renderHosts(monthAgg(curMonth)); };
-$("#reload").onclick = loadAll;
-$("#pick").onclick = () => $("#file").click();
-$("#file").onchange = e => loadLocal(e.target.files);
+$("#reload").onclick = reread;
+$("#pick").onclick = pickFolder;
+$("#dir").onchange = e => { const fl = [...e.target.files]; e.target.value = ""; if (fl.length){ reset(); loadLocal(fl, "Ordner (einmalig gewählt)"); } };
 $("#exp").onclick = () => {
   if (!curMonth) return;
   const a = monthAgg(curMonth), q = v => `"${String(v).replace(/"/g,'""')}"`;
@@ -577,7 +654,7 @@ addEventListener("dragenter", e => { e.preventDefault(); if (++dragDepth === 1) 
 addEventListener("dragleave", () => { if (--dragDepth === 0) document.body.classList.remove("over"); });
 addEventListener("dragover", e => e.preventDefault());
 addEventListener("drop", e => { e.preventDefault(); dragDepth = 0; document.body.classList.remove("over"); loadLocal(e.dataTransfer.files); });
-loadAll();
+init();
 </script>
 </body>
 </html>
