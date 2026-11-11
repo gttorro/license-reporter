@@ -292,6 +292,9 @@ const ED = {Datacenter:"var(--s1)", Standard:"var(--s2)", Other:"var(--s0)"};
 const ENV_COL = {PROD:"var(--e1)", TEST:"var(--e2)"};
 const envColor = e => ENV_COL[e] || "var(--e3)";
 const envOrder = e => ({PROD:0, TEST:1}[e] ?? 2);
+// local calendar date "YYYY-MM-DD" (toISOString() would give the UTC date)
+const localISO = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const parseDay = d => new Date(d + "T00:00");   // "YYYY-MM-DD" as local midnight
 
 let exportsMap = new Map();      // "ENV|YYYY-MM-DD" -> {env, date, file, hosts}
 let sources = new Set();
@@ -358,7 +361,7 @@ function parseName(name){
 }
 function addFile(name, text, lastMod){
   let {env, date} = parseName(name);
-  if (!date && lastMod) date = new Date(lastMod).toISOString().slice(0,10);
+  if (!date && lastMod) date = localISO(new Date(lastMod));
   if (!date) return false;
   const uniq = new Map();
   parseCSV(text).filter(r => r.ComputerName).map(r => toHost(r, env)).forEach(h => uniq.set(h.name, h));
@@ -487,6 +490,15 @@ const daysInMonth = m => { const [y, mo] = m.split("-").map(Number); return new 
 const isOk = s => /^responding$/i.test(s);
 const zero = keys => Object.fromEntries(keys.map(k => [k, 0]));
 
+// Days that should already have an export: whole month for past months, up to yesterday for the
+// running month (today's export may not have run yet; if it is already there it still counts).
+const requiredDays = m => { const t = localISO(); return m < t.slice(0,7) ? daysInMonth(m) : m === t.slice(0,7) ? +t.slice(8) - 1 : 0; };
+function missingDays(m, envs, envDates){
+  const req = requiredDays(m);
+  return Object.fromEntries(envs.map(e => { let n = 0;
+    for (let i = 1; i <= req; i++) if (!envDates[e].has(`${m}-${String(i).padStart(2,"0")}`)) n++;
+    return [e, n]; }));
+}
 const aggCache = new Map();
 function monthAgg(month){
   if (aggCache.has(month)) return aggCache.get(month);
@@ -494,9 +506,9 @@ function monthAgg(month){
   const ex = allExports().filter(e => e.date.startsWith(month)).sort((a, b) => a.date.localeCompare(b.date));
   const dates = [...new Set(ex.map(e => e.date))].sort();
   const hosts = new Map(), byDate = new Map(dates.map(d => [d, {d, env:zero(envs), ed:zero(EDS), total:0, n:0, have:[]}]));
-  const cov = zero(envs);
+  const cov = zero(envs), envDates = Object.fromEntries(envs.map(k => [k, new Set()]));
   for (const e of ex){
-    const day = byDate.get(e.date); day.have.push(e.env); cov[e.env]++;
+    const day = byDate.get(e.date); day.have.push(e.env); cov[e.env]++; envDates[e.env].add(e.date);
     for (const h of e.hosts){
       day.env[h.env] += h.lic; day.ed[h.ed] += h.lic; day.total += h.lic; day.n++;
       const key = h.env + "|" + h.name;
@@ -509,7 +521,7 @@ function monthAgg(month){
   }
   const list = [...hosts.values()];
   const sum = (f, pred = () => true) => list.filter(pred).reduce((s, h) => s + f(h), 0);
-  const a = {month, envs, dates, daily:[...byDate.values()], hosts:list, cov,
+  const a = {month, envs, dates, daily:[...byDate.values()], hosts:list, cov, missing:missingDays(month, envs, envDates),
     lic:sum(h => h.peakLic), phys:sum(h => h.peakPhys), cpus:sum(h => h.cpus),
     ed:Object.fromEntries(EDS.map(k => [k, sum(h => h.peakLic, h => h.ed === k)])),
     env:Object.fromEntries(envs.map(k => [k, sum(h => h.peakLic, h => h.env === k)])),
@@ -549,7 +561,7 @@ function deltaBadge(d, light){
   return light ? `<span class="pill">${txt} vs. previous month</span>` : `<span class="badge ${cls}">${txt}</span>`;
 }
 function renderHero(a, prev, ms){
-  const running = a.month === new Date().toISOString().slice(0,7);
+  const running = a.month === localISO().slice(0,7);
   $("#eyebrow").textContent = `Windows Server cores to report · ${a.envs.join(" + ")} · ${monthLabel(a.month)}${running ? " (in progress)" : ""}`;
   countUp($("#heroNum"), a.lic);
   $("#heroSub").innerHTML = `<span>${fmt(a.lic/2)} × 2‑core packs</span>${deltaBadge(prev ? a.lic - prev.lic : null, true)}`;
@@ -573,13 +585,13 @@ const ICON = {
   cpu:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M10 2v4M14 2v4M10 18v4M14 18v4M2 10h4M2 14h4M18 10h4M18 14h4"/>'
 };
 function renderKPIs(a){
-  const dim = daysInMonth(a.month), running = a.month === new Date().toISOString().slice(0,7);
+  const dim = daysInMonth(a.month);
   const svg = i => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[i]}</svg>`;
   const k = (icon, c, l, v, s, cls = "") => `<div class="card kpi ${cls}" style="--c:${c}"><div class="ico">${svg(icon)}</div><div><div class="l">${l}</div><div class="v num">${v}</div><div class="s">${s}</div></div></div>`;
-  // coverage: expected = days until today (current month) or all days
-  const expected = running ? new Date().getDate() : dim;
+  // coverage: a day counts as missing once it is over (current month) or for all days of a past month
+  const miss = a.missing, anyMiss = a.envs.some(e => miss[e]);
   const minCov = Math.min(...a.envs.map(e => a.cov[e])), cov = minCov / dim, C = 2 * Math.PI * 18;
-  const ringCol = minCov >= dim ? "var(--good)" : minCov >= expected ? "var(--s1)" : "var(--warn)";
+  const ringCol = minCov >= dim ? "var(--good)" : !anyMiss ? "var(--s1)" : "var(--warn)";
   $("#kpis").innerHTML =
     a.envs.map(e => k("env", envColor(e), esc(e), fmt(a.env[e]),
       `${a.envHosts[e]} hosts · ${a.lic ? Math.round(a.env[e]/a.lic*100) : 0}% of total`, "env")).join("") +
@@ -588,9 +600,9 @@ function renderKPIs(a){
     k("cpu", "var(--text2)", "Physical cores", fmt(a.phys), a.lic > a.phys ? `+${fmt(a.lic - a.phys)} minimum licensing` : "no surcharge") +
     `<div class="card kpi"><svg class="ring" width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" stroke="var(--surface2)"/><circle cx="22" cy="22" r="18" stroke="${ringCol}" stroke-linecap="round" stroke-dasharray="${C*cov} ${C}" transform="rotate(-90 22 22)"/></svg>
       <div><div class="l">Daily exports</div>
-      <div class="cov num" style="font-size:15px;font-weight:600;margin:3px 0">${a.envs.map(e => `<span class="${a.cov[e] < expected ? "bad" : ""}"><i style="background:${envColor(e)}"></i>${a.cov[e]}</span>`).join("")}<span class="muted" style="font-weight:400">/ ${dim}</span></div>
-      <div class="s">${a.envs.every(e => a.cov[e] >= dim) ? "complete" : a.envs.every(e => a.cov[e] >= expected) ? "current month, complete so far"
-        : `<span style="color:var(--warn)">missing: ${a.envs.filter(e => a.cov[e] < expected).map(e => `${esc(e)} ${expected - a.cov[e]}×`).join(", ")}</span>`}</div></div></div>`;
+      <div class="cov num" style="font-size:15px;font-weight:600;margin:3px 0">${a.envs.map(e => `<span class="${miss[e] ? "bad" : ""}"><i style="background:${envColor(e)}"></i>${a.cov[e]}</span>`).join("")}<span class="muted" style="font-weight:400">/ ${dim}</span></div>
+      <div class="s">${a.envs.every(e => a.cov[e] >= dim) ? "complete" : !anyMiss ? "current month, complete so far"
+        : `<span style="color:var(--warn)">missing: ${a.envs.filter(e => miss[e]).map(e => `${esc(e)} ${miss[e]}×`).join(", ")}</span>`}</div></div></div>`;
 }
 
 function niceStep(max){ const r = max / 4, p = Math.pow(10, Math.floor(Math.log10(r))); return [1,2,5,10].map(m => m*p).find(s => s >= r); }
@@ -631,7 +643,7 @@ function renderChart(a){
     const d = ev.target.dataset?.d; if (!d) return hideTip();
     const e = byDay.get(d);
     const row = (c, l, v, r) => `<div class="r"><span><i class="${r ? "round" : ""}" style="background:${c}"></i>${esc(l)}</span><b class="num">${v}</b></div>`;
-    showTip(ev, `<div class="t">${new Date(d).toLocaleDateString("en-GB", {weekday:"short", day:"numeric", month:"long"})}</div>
+    showTip(ev, `<div class="t">${parseDay(d).toLocaleDateString("en-GB", {weekday:"short", day:"numeric", month:"long"})}</div>
       <div class="h">Environment</div>${a.envs.map(k => row(envColor(k), k, e.have.includes(k) ? fmt(e.env[k]) : '<span style="color:var(--warn)">no export</span>', true)).join("")}
       <div class="h">Edition</div>${EDS.filter(k => e.ed[k]).map(k => row(ED[k], k, fmt(e.ed[k]))).join("")}
       <div class="r" style="border-top:1px solid var(--line);margin-top:6px;padding-top:4px"><span>Total · ${e.n} Hosts</span><b class="num">${fmt(e.total)}</b></div>`);
@@ -708,12 +720,11 @@ function renderHosts(a){
 function renderMonths(ms){
   const aggs = ms.map(monthAgg).reverse(), max = Math.max(...aggs.map(a => a.lic), 1), envs = envsList();
   let h = `<thead><tr><th>Month</th><th>Exports</th><th class="n">Hosts</th>${envs.map(e => `<th class="n">${esc(e)}</th>`).join("")}<th class="n">Datacenter</th><th class="n">Standard</th><th class="n">SPLA cores (total)</th><th class="n">Packs</th><th class="n">Δ prev. month</th></tr></thead><tbody>`;
-  const today = new Date(), curM = today.toISOString().slice(0,7);
   aggs.forEach((a, i) => {
-    const prev = aggs[i+1], dim = daysInMonth(a.month), expected = a.month === curM ? today.getDate() : dim;
+    const prev = aggs[i+1], dim = daysInMonth(a.month);
     h += `<tr class="click${a.month === curMonth ? " sel" : ""}" data-m="${a.month}">
       <td><b>${monthLabel(a.month)}</b></td>
-      <td><span class="cov num">${envs.map(e => `<span class="${(a.cov[e] || 0) < expected ? "bad" : ""}" title="${esc(e)}: ${a.cov[e] || 0} of ${dim} days"><i style="background:${envColor(e)}"></i>${a.cov[e] || 0}</span>`).join("")}<span class="muted">/ ${dim}</span></span></td>
+      <td><span class="cov num">${envs.map(e => `<span class="${a.missing[e] ? "bad" : ""}" title="${esc(e)}: ${a.cov[e] || 0} of ${dim} days"><i style="background:${envColor(e)}"></i>${a.cov[e] || 0}</span>`).join("")}<span class="muted">/ ${dim}</span></span></td>
       <td class="n">${a.hosts.length}</td>
       ${envs.map(e => `<td class="n">${fmt(a.env[e] || 0)}</td>`).join("")}
       <td class="n">${fmt(a.ed.Datacenter)}</td><td class="n">${fmt(a.ed.Standard)}</td>
@@ -733,12 +744,12 @@ function renderFooter(){
   const envs = envsList(), last = lastPerEnv();
   $("#files").innerHTML = envs.map(e => { const l = allExports().filter(x => x.env === e).sort((x, y) => x.date.localeCompare(y.date));
     return `<p>${etag(e)} ${l.length} exports: ${l.map(x => esc(x.file)).join(", ")}</p>`; }).join("");
-  $("#foot").innerHTML = `Source: ${[...sources].join(" + ") || "–"} · ${exportsMap.size} daily exports · latest export ${envs.map(e => `${esc(e)} ${new Date(last[e]).toLocaleDateString("en-GB")}`).join(", ")} · loaded ${new Date().toLocaleString("en-GB", {dateStyle:"short", timeStyle:"short"})}`;
+  $("#foot").innerHTML = `Source: ${[...sources].join(" + ") || "–"} · ${exportsMap.size} daily exports · latest export ${envs.map(e => `${esc(e)} ${parseDay(last[e]).toLocaleDateString("en-GB")}`).join(", ")} · loaded ${new Date().toLocaleString("en-GB", {dateStyle:"short", timeStyle:"short"})}`;
 }
 function checkFreshness(){
   const last = lastPerEnv(), today = new Date().setHours(0,0,0,0);
-  const stale = Object.entries(last).map(([e, d]) => [e, d, Math.floor((today - new Date(d + "T00:00").getTime()) / 864e5)]).filter(([, , age]) => age > 1);
-  notice(stale.length ? "Daily export outdated: " + stale.map(([e, d, age]) => `<b>${esc(e)}</b> last on ${new Date(d).toLocaleDateString("en-GB")} (${age} days ago)`).join(", ") + " – is the daily export still running?" : "");
+  const stale = Object.entries(last).map(([e, d]) => [e, d, Math.round((today - parseDay(d).getTime()) / 864e5)]).filter(([, , age]) => age > 1);
+  notice(stale.length ? "Daily export outdated: " + stale.map(([e, d, age]) => `<b>${esc(e)}</b> last on ${parseDay(d).toLocaleDateString("en-GB")} (${age} days ago)`).join(", ") + " – is the daily export still running?" : "");
 }
 
 /* ================= Events ================= */
