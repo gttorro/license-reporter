@@ -1,42 +1,82 @@
-# license-reporter
+<div align="center">
 
-SPLA-Reporting-Dashboard für Hyper-V/VMM-Hosts (Windows Server, Core-Lizenzierung).
+# 📊 license-reporter
 
-## Aufbau
+**SPLA reporting dashboard for Hyper-V / VMM hosts**
 
+*Windows Server · per-core licensing · single HTML file · zero dependencies*
+
+</div>
+
+---
+
+## ✨ Features
+
+- 🧮 **Automatic core calculation** following SPLA per-core licensing rules
+- 📅 **Monthly peak values** per host, aggregated from daily exports
+- 🌍 **Multiple environments** (PROD, TEST, …) detected automatically from file names
+- 🏷️ **Split by edition**: Datacenter / Standard
+- ⚠️ **Gap detection**: missing daily exports are flagged per environment
+- 💾 **CSV export** of the monthly report
+- 📦 **No installation**: one `index.html`, no external libraries, no backend
+
+---
+
+## 📁 Project structure
+
+```text
+license-reporter/
+├── index.html                           # the dashboard (single file, no external dependencies)
+└── report/
+    ├── VMMHostExport_PROD_YYYYMMDD.csv  # one export per day and environment
+    └── VMMHostExport_TEST_YYYYMMDD.csv  # (included: dummy data Sep–Nov 2026)
 ```
-index.html                             <- die Website (eine Datei, keine externen Abhängigkeiten)
-report/
-  VMMHostExport_PROD_JJJJMMTT.csv      <- pro Tag ein Export je Umgebung
-  VMMHostExport_TEST_JJJJMMTT.csv         (hier: Dummy-Daten Sep–Nov 2026)
+
+> [!NOTE]
+> The environment name is taken from the file name (the part before the date).
+> Additional environments, e.g. `VMMHostExport_DEV_20261101.csv`, are picked up automatically.
+
+The daily CSV exports are dropped into the `report/` subfolder. The folder can be changed via
+the `CSV_DIR` constant in `index.html`.
+
+### CSV format
+
+```csv
+"ComputerName","HostCluster","PhysicalCPUCount","CoresPerCPU","LogicalCPUCount","ProcessorManufacturer","CPUSpeed","OperatingSystem","Description","ComputerState"
+"HV-A01","CL-PROD01.corp.example","2","32","128","Intel","2800","Microsoft Windows Server 2022 Datacenter ","DemoBlade G11","Responding"
 ```
 
-Die Umgebung wird aus dem Dateinamen gelesen (der Teil vor dem Datum). Weitere Umgebungen
-werden automatisch erkannt.
+---
 
-Die täglichen CSV-Exporte landen automatisch im Unterordner `report/`
-(anpassbar über `CSV_DIR` in `index.html`).
+## 🚀 Loading the data
 
-## Wie die Daten eingelesen werden
+On startup the dashboard tries to read the CSV files automatically:
 
-Beim Öffnen liest das Dashboard die CSVs automatisch ein, sofern möglich:
+| # | Scenario | How it works |
+|---|----------|--------------|
+| 1 | **Via a web server** | Fully automatic on every visit. The server must allow directory listing for `report/` only (IIS *Directory Browsing*, Apache `Options +Indexes`, nginx `autoindex on`). There must be no `index.html` / `default.htm` inside `report/`. |
+| 2 | **Opened locally / from a network share** in Edge or Chrome | The first time, click **„Ordner wählen“** (*choose folder*) and select the `report` folder. The browser remembers it and loads it automatically on later visits, or asks for permission again with a single click. |
+| 3 | **Other browsers** (e.g. Firefox) | Click **„Ordner wählen“** on every visit, or drag & drop the CSV files onto the page. |
 
-1. **Über einen Webserver**, der den Unterordner `report/` auflisten darf (IIS "Verzeichnis
-   durchsuchen" nur für `report/`, Apache `Options +Indexes`, nginx `autoindex on`):
-   vollautomatisch bei jedem Aufruf. In `report/` darf keine `index.html`/`default.htm` liegen.
-2. **Per Doppelklick / von einer Netzwerkfreigabe** in Edge oder Chrome: beim ersten Mal
-   "Ordner wählen" klicken und den Ordner `report` auswählen. Der Browser merkt sich den Ordner und liest ihn bei den
-   nächsten Starts automatisch ein – oder fragt mit einem Klick erneut um Erlaubnis.
-3. **Andere Browser** (z.B. Firefox): "Ordner wählen" bei jedem Besuch, oder CSVs per
-   Drag & Drop auf die Seite ziehen.
+🔄 **„Neu einlesen“** (*reload*) re-reads the folder at any time, e.g. after a new export has arrived.
 
-"Neu einlesen" liest den Ordner jederzeit erneut ein, z.B. nachdem ein neuer Export dazugekommen ist.
+---
 
-## Berechnung
+## 🧮 Calculation rules
 
-* Physische Cores = `PhysicalCPUCount × CoresPerCPU` (Hyperthreading zählt nicht)
-* Mindestens 8 Cores pro CPU und 16 Cores pro Server, in 2-Core-Packs
-* Monatswert pro Host = Peak aller Tages-Exporte im Monat; Summe über alle Hosts = SPLA Cores
-* **Total = PROD + TEST**; Aufteilung nach Umgebung und Edition wird überall mit angezeigt
-* Fehlende Tages-Exporte werden pro Umgebung angezeigt
-* Getrennt nach Edition (Datacenter / Standard), Export des Monatsreports als CSV
+| Rule | Details |
+|------|---------|
+| **Physical cores** | `PhysicalCPUCount × CoresPerCPU` (hyper-threading is **not** counted) |
+| **Minimums** | at least **8 cores per CPU** and **16 cores per server**, licensed in **2-core packs** |
+| **Monthly value per host** | **peak** across all daily exports in that month |
+| **SPLA cores** | sum of the monthly values over all hosts |
+| **Total** | **PROD + TEST**, with the breakdown by environment and edition shown throughout |
+
+**Example:** a host with 2 CPUs × 6 cores = 12 physical cores
+→ raised to 8 cores per CPU = 16 → **16 SPLA cores**.
+
+---
+
+<div align="center">
+<sub>Made for SPLA monthly reporting of Hyper-V / SCVMM environments.</sub>
+</div>
