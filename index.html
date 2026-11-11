@@ -268,7 +268,7 @@ body.over::after{content:"Drop CSV files here";position:fixed;inset:12px;border:
       <summary>Calculation rules &amp; data source</summary>
       <ul>
         <li>One export per day and environment. The environment is part of the file name, before the date: <code>VMMHostExport_PROD_YYYYMMDD.csv</code>, <code>VMMHostExport_TEST_YYYYMMDD.csv</code>.</li>
-        <li>All physical cores of a host are counted (<code>PhysicalCPUCount × CoresPerCPU</code>); hyper-threading is not counted.</li>
+        <li>All physical cores of a host are counted. VMM's <code>CoresPerCPU</code> includes hyper-threading, so physical cores = <code>PhysicalCPUCount × CoresPerCPU ÷ 2</code>; hyper-threads are not licensed.</li>
         <li>Windows Server minimum licensing: 8 cores per processor, 16 cores per server, in 2‑core packs.</li>
         <li>Monthly value per host = peak across all daily exports of the month. A host counts as soon as it appears on any day.</li>
         <li><b>Total = sum of all environments</b> (PROD + TEST). The breakdown by environment and edition is shown for verification.</li>
@@ -339,13 +339,17 @@ function parseCSV(text){
   return rows.map(r => Object.fromEntries(head.map((h, i) => [h, (r[i] ?? "").trim()])));
 }
 const edition = os => /datacenter/i.test(os) ? "Datacenter" : /standard/i.test(os) ? "Standard" : "Other";
+// VMM's CoresPerCPU includes hyper-threading (logical processors per CPU), not physical cores.
+// Physical cores per CPU = CoresPerCPU / THREADS_PER_CORE.
+const THREADS_PER_CORE = 2;
+const physPerCpu = lpc => Math.ceil(lpc / THREADS_PER_CORE);
 function licCores(cpus, cpc){
   if (!cpus || !cpc) return 0;
   return Math.ceil(Math.max(cpus * Math.max(cpc, 8), 16) / 2) * 2;
 }
 function toHost(r, env){
-  const cpus = parseInt(r.PhysicalCPUCount) || 0, cpc = parseInt(r.CoresPerCPU) || 0, os = r.OperatingSystem || "";
-  return {env, name:(r.ComputerName || "").toUpperCase(), cluster:r.HostCluster || "", cpus, cpc, phys:cpus*cpc,
+  const cpus = parseInt(r.PhysicalCPUCount) || 0, lpc = parseInt(r.CoresPerCPU) || 0, cpc = physPerCpu(lpc), os = r.OperatingSystem || "";
+  return {env, name:(r.ComputerName || "").toUpperCase(), cluster:r.HostCluster || "", cpus, lpc, cpc, phys:cpus*cpc,
     lic:licCores(cpus, cpc), os, ed:edition(os), desc:r.Description || "", state:r.ComputerState || ""};
 }
 // "VMMHostExport_PROD_20261014.csv" -> {env:"PROD", date:"2026-10-14"}
@@ -502,7 +506,7 @@ function monthAgg(month){
       const key = h.env + "|" + h.name;
       let a = hosts.get(key);
       if (!a){ a = {...h, peakLic:0, peakPhys:0, daysSeen:0, first:e.date, notResp:0}; hosts.set(key, a); }
-      Object.assign(a, {cluster:h.cluster || a.cluster, os:h.os, ed:h.ed, desc:h.desc, state:h.state, cpus:h.cpus, cpc:h.cpc, last:e.date});
+      Object.assign(a, {cluster:h.cluster || a.cluster, os:h.os, ed:h.ed, desc:h.desc, state:h.state, cpus:h.cpus, lpc:h.lpc, cpc:h.cpc, last:e.date});
       a.peakLic = Math.max(a.peakLic, h.lic); a.peakPhys = Math.max(a.peakPhys, h.phys);
       a.daysSeen++; if (!isOk(h.state)) a.notResp++;
     }
@@ -684,7 +688,7 @@ function renderHosts(a){
       <td class="host"><span class="dot ${dot}"></span><b>${esc(x.name)}</b><small>${esc(x.os.replace(/^Microsoft\s+/i, ""))}${x.desc ? " · " + esc(x.desc) : ""}</small></td>
       <td class="cl">${x.cluster ? esc(x.cluster.split(".")[0]) : '<span class="muted">Standalone</span>'}</td>
       <td><span class="tag"><i style="background:${ED[x.ed]}"></i>${x.ed}</span></td>
-      <td class="n">${x.cpus} × ${x.cpc}</td>
+      <td class="n" title="CoresPerCPU ${x.lpc} (incl. hyper-threading) ÷ ${THREADS_PER_CORE} = ${x.cpc} physical cores per CPU">${x.cpus} × ${x.cpc}</td>
       <td class="n">${fmt(x.peakPhys)}</td>
       <td class="n"><div class="barcell">${x.peakLic > x.peakPhys ? '<span class="minnote" title="Minimum licensing (8 per CPU / 16 per server)">MIN</span>' : ""}<div class="minibar"><b style="width:${x.peakLic/maxLic*100}%;background:${ED[x.ed]}"></b></div><b class="num" style="min-width:2.5em">${fmt(x.peakLic)}</b></div></td>
       <td class="n">${x.daysSeen}${partial}</td>
@@ -758,12 +762,12 @@ $("#dir").onchange = e => { const fl = [...e.target.files]; e.target.value = "";
 $("#exp").onclick = () => {
   if (!curMonth) return;
   const a = monthAgg(curMonth), q = v => `"${String(v).replace(/"/g,'""')}"`;
-  const L = [["Month","Environment","Host","Cluster","Edition","OperatingSystem","CPUs","CoresPerCPU","PhysCores","SPLACores","CorePacks2","DaysSeen","FirstDay","LastDay"]];
+  const L = [["Month","Environment","Host","Cluster","Edition","OperatingSystem","CPUs","CoresPerCPU","PhysCoresPerCPU","PhysCores","SPLACores","CorePacks2","DaysSeen","FirstDay","LastDay"]];
   a.hosts.slice().sort((x, y) => envOrder(x.env) - envOrder(y.env) || x.name.localeCompare(y.name))
-    .forEach(h => L.push([curMonth,h.env,h.name,h.cluster,h.ed,h.os,h.cpus,h.cpc,h.peakPhys,h.peakLic,h.peakLic/2,h.daysSeen,h.first,h.last]));
+    .forEach(h => L.push([curMonth,h.env,h.name,h.cluster,h.ed,h.os,h.cpus,h.lpc,h.cpc,h.peakPhys,h.peakLic,h.peakLic/2,h.daysSeen,h.first,h.last]));
   for (const e of a.envs) L.push(["TOTAL",e,"","","All","","","",a.envPhys[e],a.env[e],a.env[e]/2,"","",""]);
   for (const k of EDS) if (a.ed[k]) L.push(["TOTAL","All","","",k,"","","","",a.ed[k],a.ed[k]/2,"","",""]);
-  L.push(["TOTAL","All","","","All","",a.cpus,"",a.phys,a.lic,a.lic/2,"","",""]);
+  L.push(["TOTAL","All","","","All","",a.cpus,"","",a.phys,a.lic,a.lic/2,"","",""]);
   const link = Object.assign(document.createElement("a"), {href:URL.createObjectURL(new Blob(["﻿" + L.map(r => r.map(q).join(";")).join("\r\n")], {type:"text/csv"})), download:`SPLA_Report_${curMonth}.csv`});
   link.click(); URL.revokeObjectURL(link.href);
 };

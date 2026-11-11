@@ -43,7 +43,7 @@ the `CSV_DIR` constant in `index.html`.
 
 ```csv
 "ComputerName","HostCluster","PhysicalCPUCount","CoresPerCPU","LogicalCPUCount","ProcessorManufacturer","CPUSpeed","OperatingSystem","Description","ComputerState"
-"HV-A01","CL-PROD01.corp.example","2","32","128","Intel","2800","Microsoft Windows Server 2022 Datacenter ","DemoBlade G11","Responding"
+"HV-A01","CL-PROD01.corp.example","2","64","128","Intel","2800","Microsoft Windows Server 2022 Datacenter ","DemoBlade G11","Responding"
 ```
 
 ---
@@ -66,13 +66,13 @@ On startup the dashboard tries to read the CSV files automatically:
 
 | Rule | Details |
 |------|---------|
-| **Physical cores** | `PhysicalCPUCount × CoresPerCPU` (hyper-threading is **not** counted) |
+| **Physical cores** | `PhysicalCPUCount × CoresPerCPU ÷ 2`: VMM's `CoresPerCPU` includes hyper-threading, hyper-threads are **not** licensed (factor: `THREADS_PER_CORE` in `index.html`) |
 | **Minimums** | at least **8 cores per CPU** and **16 cores per server**, licensed in **2-core packs** |
 | **Monthly value per host** | **peak** across all daily exports in that month |
 | **SPLA cores** | sum of the monthly values over all hosts |
 | **Total** | **PROD + TEST**, with the breakdown by environment and edition shown throughout |
 
-**Example:** a host with 2 CPUs × 6 cores = 12 physical cores
+**Example:** a host with 2 CPUs and `CoresPerCPU` = 12 (incl. hyper-threading) → 2 × 6 = 12 physical cores
 → raised to 8 cores per CPU = 16 → **16 SPLA cores**.
 
 ---
