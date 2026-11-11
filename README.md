@@ -6,6 +6,8 @@ SPLA-Reporting-Dashboard für Hyper-V/VMM-Hosts (Windows Server, Core-Lizenzieru
 
 ```
 index.html                             <- die Website (eine Datei, keine externen Abhängigkeiten)
+scripts/
+  Export-VMMHostInventory.ps1          <- täglicher VMM-Export (ScriptRunner)
 report/
   VMMHostExport_PROD_JJJJMMTT.csv      <- pro Tag ein Export je Umgebung
   VMMHostExport_TEST_JJJJMMTT.csv         (hier: Dummy-Daten Sep–Nov 2026)
@@ -16,6 +18,14 @@ werden automatisch erkannt.
 
 Die täglichen CSV-Exporte landen automatisch im Unterordner `report/`
 (anpassbar über `CSV_DIR` in `index.html`).
+
+## Export aus VMM (ScriptRunner)
+
+`scripts/Export-VMMHostInventory.ps1` schreibt die Tagesdatei `VMMHostExport_<PROD|TEST>_JJJJMMTT.csv`.
+Parameter: `VMM_Server` (PROD/TEST), `VMM_Credential`, `OutputFolder` (= Ordner `report`).
+Die FQDNs der VMM-Server stehen oben im Skript in `$VmmServers`. Im ScriptRunner zwei geplante
+Aktionen anlegen (PROD und TEST), z.B. täglich 06:00. Läuft das Skript mehrmals am Tag, gilt der
+letzte Lauf. Voraussetzung: VMM-Konsole (Modul `VirtualMachineManager`) auf dem Ausführungs-Host.
 
 ## Wie die Daten eingelesen werden
 
