@@ -68,7 +68,8 @@ On startup the dashboard tries to read the CSV files automatically:
 |------|---------|
 | **Physical cores** | `PhysicalCPUCount × CoresPerCPU ÷ 2`: VMM's `CoresPerCPU` includes hyper-threading, hyper-threads are **not** licensed (factor: `THREADS_PER_CORE` in `index.html`) |
 | **Minimums** | at least **8 cores per CPU** and **16 cores per server**, licensed in **2-core packs** |
-| **Monthly value per host** | **peak** across all daily exports in that month |
+| **Host status** | only hosts with `ComputerState` = `Responding` are counted; a host that is not responding on a day is ignored for that day |
+| **Monthly value per host** | **peak** across the daily exports of the month in which the host was responding; hosts that never responded in the month are listed but not counted |
 | **SPLA cores** | sum of the monthly values over all hosts |
 | **Total** | **PROD + TEST**, with the breakdown by environment and edition shown throughout |
 
