@@ -115,6 +115,14 @@ main.wrap{margin-top:-48px;display:grid;gap:16px;padding-bottom:28px}
 .track b{display:block;height:100%;border-radius:4px}
 .split{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;margin:6px 0 4px}
 .split b{display:block;height:100%}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--muted)}
+.pager:empty{display:none}
+.pager .pg{display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center}
+.pager button{border:1px solid var(--line);background:var(--surface2);color:var(--text2);border-radius:7px;min-width:30px;padding:4px 8px;cursor:pointer;font-size:12.5px;font-variant-numeric:tabular-nums}
+.pager button:hover:not(:disabled){color:var(--text);border-color:var(--muted)}
+.pager button.on{background:var(--surface);color:var(--text);font-weight:600;border-color:var(--text2)}
+.pager button:disabled{opacity:.4;cursor:default}
+.pager select{border:1px solid var(--line);background:var(--surface2);color:var(--text2);border-radius:7px;padding:3px 6px;font-size:12.5px}
 
 .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .search{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:6px 10px;color:var(--muted)}
@@ -234,6 +242,7 @@ body.over::after{content:"Drop CSV files here";position:fixed;inset:12px;border:
       <div id="split"></div>
       <h3>Clusters</h3>
       <div class="clist" id="clusters"></div>
+      <div class="pager" id="clPager"></div>
     </div>
   </section>
 
@@ -246,6 +255,7 @@ body.over::after{content:"Drop CSV files here";position:fixed;inset:12px;border:
       </div>
     </div>
     <div class="tbl"><table id="hosts"></table></div>
+    <div class="pager" id="hostsPager"></div>
   </section>
 
   <section class="card">
@@ -286,6 +296,26 @@ const envOrder = e => ({PROD:0, TEST:1}[e] ?? 2);
 let exportsMap = new Map();      // "ENV|YYYY-MM-DD" -> {env, date, file, hosts}
 let sources = new Set();
 let curMonth = null, sortState = {key:"peakLic", dir:-1}, query = "", envFilter = "ALL", chartMode = "env";
+let hostPage = 0, hostSize = 25, clPage = 0;
+const CL_SIZE = 8, HOST_SIZES = [25, 50, 100, 0];   // 0 = all
+
+/* Pagination: returns {page, from, to, html}; page is clamped to the valid range */
+function paginate(total, page, size, sizes){
+  const pages = size ? Math.max(1, Math.ceil(total / size)) : 1;
+  page = Math.min(Math.max(page, 0), pages - 1);
+  const from = size ? page * size : 0, to = size ? Math.min(from + size, total) : total;
+  if (total <= (sizes ? sizes[0] : size)) return {page, from, to, html:""};
+  const nums = [];
+  for (let i = 0; i < pages; i++)
+    if (i === 0 || i === pages - 1 || Math.abs(i - page) <= 1) nums.push(i);
+    else if (nums[nums.length-1] !== "…") nums.push("…");
+  const btn = (p, label, extra = "") => `<button data-p="${p}" ${extra}>${label}</button>`;
+  const nav = pages > 1 ? `<div class="pg">${btn(page - 1, "‹", `aria-label="Previous page"${page === 0 ? " disabled" : ""}`)}${
+    nums.map(n => n === "…" ? `<span>…</span>` : btn(n, n + 1, n === page ? 'class="on" aria-current="page"' : "")).join("")}${
+    btn(page + 1, "›", `aria-label="Next page"${page === pages - 1 ? " disabled" : ""}`)}</div>` : "<div></div>";
+  const sel = sizes ? ` · <label>per page <select>${sizes.map(z => `<option value="${z}"${z === size ? " selected" : ""}>${z || "All"}</option>`).join("")}</select></label>` : "";
+  return {page, from, to, html:`<span>${fmt(from + 1)}–${fmt(to)} of ${fmt(total)}${sel}</span>${nav}`};
+}
 
 /* ================= CSV ================= */
 function parseCSV(text){
@@ -496,7 +526,7 @@ function render(){
   const ms = monthsList();
   document.body.classList.toggle("empty", !ms.length);
   $("#welcome").hidden = !!ms.length;
-  if (!ms.length){ renderWelcome(); ["#chips","#spark","#kpis","#chart","#split","#clusters","#hosts","#months","#files","#foot","#heroSub","#heroEnv"].forEach(s => $(s).innerHTML = ""); $("#heroNum").textContent = "–"; return; }
+  if (!ms.length){ renderWelcome(); ["#chips","#spark","#kpis","#chart","#split","#clusters","#clPager","#hosts","#hostsPager","#months","#files","#foot","#heroSub","#heroEnv"].forEach(s => $(s).innerHTML = ""); $("#heroNum").textContent = "–"; return; }
   if (!ms.includes(curMonth)) curMonth = ms[ms.length-1];
   const a = monthAgg(curMonth), prev = ms.indexOf(curMonth) > 0 ? monthAgg(ms[ms.indexOf(curMonth)-1]) : null;
   if (envFilter !== "ALL" && !a.envs.includes(envFilter)) envFilter = "ALL";
@@ -504,7 +534,7 @@ function render(){
   renderHero(a, prev, ms); renderKPIs(a); renderChart(a); renderSplit(a); renderHosts(a); renderMonths(ms);
   renderFooter(); checkFreshness();
 }
-function select(m){ curMonth = m; render(); }
+function select(m){ curMonth = m; hostPage = clPage = 0; render(); }
 
 function countUp(el, to){
   const from = parseInt(el.dataset.v || 0), t0 = performance.now(), dur = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 600;
@@ -629,7 +659,9 @@ function renderSplit(a){
   }
   const list = [...cl.values()].sort((x, y) => envOrder(x.env) - envOrder(y.env) || x.env.localeCompare(y.env) || (x.name === "Standalone") - (y.name === "Standalone") || y.total - x.total);
   const max = Math.max(...list.map(c => c.total), 1);
-  $("#clusters").innerHTML = list.map(c => `<div class="crow">
+  const pg = paginate(list.length, clPage, CL_SIZE);
+  clPage = pg.page; $("#clPager").innerHTML = pg.html;
+  $("#clusters").innerHTML = list.slice(pg.from, pg.to).map(c => `<div class="crow">
       <div class="top2"><span title="${esc(c.name)}">${etag(c.env)} ${esc(c.name.split(".")[0])}</span><b class="num">${fmt(c.total)}</b></div>
       <div class="track" style="width:${Math.max(c.total/max*100, 2)}%">${EDS.filter(k => c[k]).map(k => `<b style="flex:${c[k]};background:${ED[k]}" title="${k}: ${fmt(c[k])}"></b>`).join("")}</div>
       <div class="meta">${c.n} host${c.n > 1 ? "s" : ""}${c.name.includes(".") ? " · " + esc(c.name.split(".").slice(1).join(".")) : ""}</div></div>`).join("");
@@ -642,7 +674,9 @@ function renderHosts(a){
   const list = a.hosts.filter(h => (envFilter === "ALL" || h.env === envFilter) && (!ql || [h.env, h.name, h.cluster, h.os, h.desc, h.ed].join(" ").toLowerCase().includes(ql)))
     .sort((x, y) => (typeof x[key] === "number" ? x[key] - y[key] : String(x[key]).localeCompare(String(y[key]))) * dir || envOrder(x.env) - envOrder(y.env) || x.name.localeCompare(y.name));
   let h = `<thead><tr>${cols.map(([c, l, n]) => `<th class="${n||""}" data-k="${c}">${l}${key === c ? (dir > 0 ? " ↑" : " ↓") : ""}</th>`).join("")}</tr></thead><tbody>`;
-  for (const x of list){
+  const pg = paginate(list.length, hostPage, hostSize, HOST_SIZES);
+  hostPage = pg.page; $("#hostsPager").innerHTML = pg.html;
+  for (const x of list.slice(pg.from, pg.to)){
     const dot = !isOk(x.state) ? "crit" : x.notResp ? "warn" : "";
     const partial = x.daysSeen < a.cov[x.env] ? `<br><small class="muted">${+x.first.slice(8)}–${+x.last.slice(8)}</small>` : "";
     h += `<tr>
@@ -667,7 +701,7 @@ function renderHosts(a){
   $("#hosts thead").onclick = e => {
     const c = e.target.closest("th")?.dataset.k; if (!c) return;
     sortState = {key:c, dir: sortState.key === c ? -sortState.dir : (typeof a.hosts[0]?.[c] === "number" ? -1 : 1)};
-    renderHosts(a);
+    hostPage = 0; renderHosts(a);
   };
 }
 
@@ -713,8 +747,11 @@ $("#spark").onclick = e => { const m = e.target.closest("[data-m]")?.dataset.m; 
 $("#months").onclick = e => { const m = e.target.closest("tr[data-m]")?.dataset.m; if (m){ select(m); scrollTo({top:0, behavior:"smooth"}); } };
 $("#chartMode").onclick = e => { const v = e.target.closest("button")?.dataset.v; if (!v) return; chartMode = v;
   $("#chartMode").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); renderChart(monthAgg(curMonth)); };
-$("#envFilter").onclick = e => { const v = e.target.closest("button")?.dataset.v; if (v){ envFilter = v; renderHosts(monthAgg(curMonth)); } };
-$("#q").oninput = e => { query = e.target.value; renderHosts(monthAgg(curMonth)); };
+$("#envFilter").onclick = e => { const v = e.target.closest("button")?.dataset.v; if (v){ envFilter = v; hostPage = 0; renderHosts(monthAgg(curMonth)); } };
+$("#q").oninput = e => { query = e.target.value; hostPage = 0; renderHosts(monthAgg(curMonth)); };
+$("#hostsPager").onclick = e => { const b = e.target.closest("button[data-p]"); if (b && !b.disabled){ hostPage = +b.dataset.p; renderHosts(monthAgg(curMonth)); } };
+$("#hostsPager").onchange = e => { if (e.target.tagName === "SELECT"){ hostSize = +e.target.value; hostPage = 0; renderHosts(monthAgg(curMonth)); } };
+$("#clPager").onclick = e => { const b = e.target.closest("button[data-p]"); if (b && !b.disabled){ clPage = +b.dataset.p; renderSplit(monthAgg(curMonth)); } };
 $("#reload").onclick = reread;
 $("#pick").onclick = pickFolder;
 $("#dir").onchange = e => { const fl = [...e.target.files]; e.target.value = ""; if (fl.length){ reset(); loadLocal(fl, "folder (chosen once)"); } };
