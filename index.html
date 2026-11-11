@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,8 +8,8 @@
 :root{
   color-scheme:light;
   --bg:#f2f4f8;--surface:#fff;--surface2:#f7f8fb;--text:#0f1726;--text2:#4f5b70;--muted:#8a94a6;--line:#e3e7ee;
-  --s1:#2a78d6;--s2:#eb6834;--s0:#8a94a6;--s1soft:#2a78d61f;     /* Editionen: Datacenter, Standard, Andere */
-  --e1:#6250d6;--e2:#1baf7a;--e3:#eda100;                         /* Umgebungen: PROD, TEST, weitere */
+  --s1:#2a78d6;--s2:#eb6834;--s0:#8a94a6;--s1soft:#2a78d61f;     /* Editions: Datacenter, Standard, Other */
+  --e1:#6250d6;--e2:#1baf7a;--e3:#eda100;                         /* Environments: PROD, TEST, others */
   --good:#1f9d55;--warn:#c98500;--crit:#d64545;
   --hero1:#163d82;--hero2:#4b37b8;
   --shadow:0 1px 2px #0f17260d,0 4px 16px #0f17260a;
@@ -67,7 +67,7 @@ button,select,input{font:inherit;color:inherit}
 .spark g{cursor:pointer}
 .spark-cap{font-size:12px;opacity:.75;margin-bottom:6px}
 
-/* ---------- Inhalt ---------- */
+/* ---------- Content ---------- */
 main.wrap{margin-top:-48px;display:grid;gap:16px;padding-bottom:28px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);min-width:0}
 .card h2{font-size:15px;margin:0;display:flex;align-items:center;gap:8px}
@@ -182,7 +182,7 @@ body.empty .hero{padding-bottom:80px}
 .bigbtn{display:inline-flex;gap:8px;align-items:center;margin:18px 0 8px;background:var(--s1);color:#fff;border:0;border-radius:11px;padding:12px 22px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px color-mix(in srgb,var(--s1) 35%,transparent)}
 .bigbtn:hover{filter:brightness(1.08)}
 .linkbtn{background:none;border:0;color:var(--s1);cursor:pointer;text-decoration:underline;padding:0}
-body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;border:3px dashed #fff;border-radius:18px;background:#163d82cc;color:#fff;display:grid;place-items:center;font-size:22px;font-weight:600;z-index:20}
+body.over::after{content:"Drop CSV files here";position:fixed;inset:12px;border:3px dashed #fff;border-radius:18px;background:#163d82cc;color:#fff;display:grid;place-items:center;font-size:22px;font-weight:600;z-index:20}
 @media (max-width:600px){.wrap{padding:0 16px}.tbl{margin:0 -16px;padding:0 16px}.search input{width:120px}.card{padding:16px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -193,24 +193,24 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
     <div class="top">
       <div class="brand">
         <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div>
-        <div><h1>SPLA Core Reporting</h1><small>Windows Server · Hyper-V/VMM-Hosts</small></div>
+        <div><h1>SPLA Core Reporting</h1><small>Windows Server · Hyper-V/VMM hosts</small></div>
       </div>
       <div class="actions">
-        <button class="hbtn" id="exp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Monatsreport</button>
-        <button class="hbtn" id="reload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Neu einlesen</button>
-        <button class="hbtn" id="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7v12h16V9h-8l-2-2H4z"/></svg>Ordner wählen</button>
+        <button class="hbtn" id="exp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Monthly report</button>
+        <button class="hbtn" id="reload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Reload</button>
+        <button class="hbtn" id="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7v12h16V9h-8l-2-2H4z"/></svg>Choose folder</button>
         <input id="dir" type="file" webkitdirectory multiple hidden>
       </div>
     </div>
-    <nav class="chips" id="chips" aria-label="Monat wählen"></nav>
+    <nav class="chips" id="chips" aria-label="Select month"></nav>
     <div class="hero-main">
       <div>
-        <div class="eyebrow" id="eyebrow">Zu meldende Cores</div>
-        <div class="big"><b class="num" id="heroNum">–</b><span>Cores</span></div>
+        <div class="eyebrow" id="eyebrow">Cores to report</div>
+        <div class="big"><b class="num" id="heroNum">–</b><span>cores</span></div>
         <div class="hero-sub" id="heroSub"></div>
         <div class="hero-env" id="heroEnv"></div>
       </div>
-      <div class="spark"><div class="spark-cap">SPLA Cores pro Monat (alle Umgebungen)</div><div id="spark"></div></div>
+      <div class="spark"><div class="spark-cap">SPLA cores per month (all environments)</div><div id="spark"></div></div>
     </div>
   </div>
 </header>
@@ -223,16 +223,16 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
   <section class="grid2">
     <div class="card">
       <div class="chead">
-        <div><h2>Lizenzpflichtige Cores pro Tag</h2><div class="sub" id="chartsub" style="margin-bottom:0"></div></div>
-        <div class="seg" id="chartMode"><button data-v="env" class="on">nach Umgebung</button><button data-v="ed">nach Edition</button></div>
+        <div><h2>Licensable cores per day</h2><div class="sub" id="chartsub" style="margin-bottom:0"></div></div>
+        <div class="seg" id="chartMode"><button data-v="env" class="on">by environment</button><button data-v="ed">by edition</button></div>
       </div>
       <div class="legend" id="chartLegend" style="margin-top:10px"></div>
       <div id="chart"></div>
     </div>
     <div class="card">
-      <h2>Verteilung</h2><div class="sub" style="margin-bottom:0">SPLA Cores des Monats (Peak pro Host)</div>
+      <h2>Distribution</h2><div class="sub" style="margin-bottom:0">SPLA cores of the month (peak per host)</div>
       <div id="split"></div>
-      <h3>Cluster</h3>
+      <h3>Clusters</h3>
       <div class="clist" id="clusters"></div>
     </div>
   </section>
@@ -242,28 +242,28 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
       <div><h2>Hosts</h2><div class="sub" id="hostsub"></div></div>
       <div class="tools">
         <div class="seg" id="envFilter"></div>
-        <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Host, Cluster, OS…" type="search"></label>
+        <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Host, cluster, OS…" type="search"></label>
       </div>
     </div>
     <div class="tbl"><table id="hosts"></table></div>
   </section>
 
   <section class="card">
-    <h2>Monatsübersicht</h2><div class="sub">Klick auf eine Zeile wählt den Monat</div>
+    <h2>Monthly overview</h2><div class="sub">Click a row to select the month</div>
     <div class="tbl"><table id="months"></table></div>
   </section>
 
   <section class="card">
     <details>
-      <summary>Berechnungsregeln &amp; Datenquelle</summary>
+      <summary>Calculation rules &amp; data source</summary>
       <ul>
-        <li>Pro Tag kommt je Umgebung ein Export. Die Umgebung steht im Dateinamen vor dem Datum: <code>VMMHostExport_PROD_JJJJMMTT.csv</code>, <code>VMMHostExport_TEST_JJJJMMTT.csv</code>.</li>
-        <li>Pro Host zählen alle physischen Cores (<code>PhysicalCPUCount × CoresPerCPU</code>); Hyperthreading zählt nicht.</li>
-        <li>Mindestlizenzierung Windows Server: 8 Cores pro Prozessor, 16 Cores pro Server, in 2‑Core‑Packs.</li>
-        <li>Monatswert pro Host = Höchststand aller Tages-Exporte im Monat. Ein Host zählt, sobald er an einem Tag auftaucht.</li>
-        <li><b>Total = Summe aller Umgebungen</b> (PROD + TEST). Die Aufteilung nach Umgebung und Edition ist zur Kontrolle.</li>
-        <li>Edition aus <code>OperatingSystem</code> (Datacenter / Standard), massgebend ist der letzte Tag im Monat.</li>
-        <li>Datenquelle: der Unterordner <code>report/</code>. Beim Start automatisch über die Verzeichnisliste des Webservers oder den im Browser gemerkten Ordner (Edge/Chrome), sonst über „Ordner wählen“ oder Drag &amp; Drop.</li>
+        <li>One export per day and environment. The environment is part of the file name, before the date: <code>VMMHostExport_PROD_YYYYMMDD.csv</code>, <code>VMMHostExport_TEST_YYYYMMDD.csv</code>.</li>
+        <li>All physical cores of a host are counted (<code>PhysicalCPUCount × CoresPerCPU</code>); hyper-threading is not counted.</li>
+        <li>Windows Server minimum licensing: 8 cores per processor, 16 cores per server, in 2‑core packs.</li>
+        <li>Monthly value per host = peak across all daily exports of the month. A host counts as soon as it appears on any day.</li>
+        <li><b>Total = sum of all environments</b> (PROD + TEST). The breakdown by environment and edition is shown for verification.</li>
+        <li>Edition is taken from <code>OperatingSystem</code> (Datacenter / Standard); the last day of the month is decisive.</li>
+        <li>Data source: the <code>report/</code> subfolder. Loaded automatically on startup via the web server's directory listing or the folder remembered by the browser (Edge/Chrome), otherwise via “Choose folder” or drag &amp; drop.</li>
       </ul>
       <div id="files"></div>
     </details>
@@ -275,17 +275,17 @@ body.over::after{content:"CSV-Dateien hier ablegen";position:fixed;inset:12px;bo
 <script>
 "use strict";
 const $ = s => document.querySelector(s);
-const fmt = n => Math.round(n).toLocaleString("de-CH");
+const fmt = n => Math.round(n).toLocaleString("en-GB");
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const EDS = ["Datacenter","Standard","Andere"];
-const ED = {Datacenter:"var(--s1)", Standard:"var(--s2)", Andere:"var(--s0)"};
+const EDS = ["Datacenter","Standard","Other"];
+const ED = {Datacenter:"var(--s1)", Standard:"var(--s2)", Other:"var(--s0)"};
 const ENV_COL = {PROD:"var(--e1)", TEST:"var(--e2)"};
 const envColor = e => ENV_COL[e] || "var(--e3)";
 const envOrder = e => ({PROD:0, TEST:1}[e] ?? 2);
 
-let exportsMap = new Map();      // "ENV|JJJJ-MM-TT" -> {env, date, file, hosts}
+let exportsMap = new Map();      // "ENV|YYYY-MM-DD" -> {env, date, file, hosts}
 let sources = new Set();
-let curMonth = null, sortState = {key:"peakLic", dir:-1}, query = "", envFilter = "ALLE", chartMode = "env";
+let curMonth = null, sortState = {key:"peakLic", dir:-1}, query = "", envFilter = "ALL", chartMode = "env";
 
 /* ================= CSV ================= */
 function parseCSV(text){
@@ -308,7 +308,7 @@ function parseCSV(text){
   const head = rows.shift().map(h => h.trim());
   return rows.map(r => Object.fromEntries(head.map((h, i) => [h, (r[i] ?? "").trim()])));
 }
-const edition = os => /datacenter/i.test(os) ? "Datacenter" : /standard/i.test(os) ? "Standard" : "Andere";
+const edition = os => /datacenter/i.test(os) ? "Datacenter" : /standard/i.test(os) ? "Standard" : "Other";
 function licCores(cpus, cpc){
   if (!cpus || !cpc) return 0;
   return Math.ceil(Math.max(cpus * Math.max(cpc, 8), 16) / 2) * 2;
@@ -322,9 +322,9 @@ function toHost(r, env){
 function parseName(name){
   const parts = name.replace(/\.csv$/i, "").split(/[_\s]+/);
   const i = parts.findLastIndex(p => /^20\d{6}$/.test(p.replace(/-/g, "")));
-  if (i < 0) return {env:"UNBEKANNT", date:null};
+  if (i < 0) return {env:"UNKNOWN", date:null};
   const d = parts[i].replace(/-/g, "");
-  return {env: i >= 2 ? parts[i-1].toUpperCase() : "UNBEKANNT", date:`${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`};
+  return {env: i >= 2 ? parts[i-1].toUpperCase() : "UNKNOWN", date:`${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`};
 }
 function addFile(name, text, lastMod){
   let {env, date} = parseName(name);
@@ -336,12 +336,12 @@ function addFile(name, text, lastMod){
   return true;
 }
 
-/* ================= Laden ================= */
-// Reihenfolge beim Start:
-//   1) Verzeichnisliste des Webservers für CSV_DIR (IIS "Verzeichnis durchsuchen", Apache/nginx autoindex)
-//   2) im Browser gemerkter Ordner (File System Access API, Edge/Chrome) – auch per Doppelklick (file://)
-//   3) sonst Startkarte mit "Ordner wählen" bzw. Drag & Drop
-const CSV_DIR = "report/";   // Unterordner mit den täglichen CSV-Exporten (relativ zu dieser Seite)
+/* ================= Loading ================= */
+// Order on startup:
+//   1) web server directory listing for CSV_DIR (IIS "Directory Browsing", Apache/nginx autoindex)
+//   2) folder remembered by the browser (File System Access API, Edge/Chrome) – also when opened by double-click (file://)
+//   3) otherwise welcome card with "Choose folder" or drag & drop
+const CSV_DIR = "report/";   // subfolder with the daily CSV exports (relative to this page)
 const canPick = "showDirectoryPicker" in window;
 const isHttp = location.protocol.startsWith("http");
 let dirHandle = null;
@@ -360,13 +360,13 @@ function kv(mode, fn){
   });
 }
 const loadHandle = () => kv("readonly", st => st.get("dir")).catch(() => null);
-const saveHandle = h => kv("readwrite", st => st.put(h, "dir")).catch(e => console.warn("Ordner kann nicht gemerkt werden", e));
+const saveHandle = h => kv("readwrite", st => st.put(h, "dir")).catch(e => console.warn("Could not remember folder", e));
 
 async function loadListing(){
   const r = await fetch(CSV_DIR, {cache:"no-store"});
   if (!r.ok) return 0;
   const html = await r.text();
-  if (html.includes('id="heroNum"')) return 0;   // Server liefert eine Seite statt der Liste
+  if (html.includes('id="heroNum"')) return 0;   // server returned a page instead of the listing
   const urls = new Set();
   new DOMParser().parseFromString(html, "text/html").querySelectorAll("a[href]").forEach(a => {
     const href = a.getAttribute("href").split("?")[0];
@@ -390,12 +390,12 @@ async function readDir(h){
   return n;
 }
 const reset = () => { exportsMap.clear(); sources.clear(); };
-const dirLabel = h => `Ordner „${h.name}“`;
+const dirLabel = h => `folder “${h.name}”`;
 function done(src){ if (src) sources.add(src); render(); }
 
 async function init(){
   reset();
-  if (isHttp){ try{ if (await loadListing()) return done("Webserver-Verzeichnis"); }catch(e){ console.warn(e); } }
+  if (isHttp){ try{ if (await loadListing()) return done("web server directory"); }catch(e){ console.warn(e); } }
   if (canPick){
     dirHandle = await loadHandle();
     try{
@@ -410,7 +410,7 @@ async function reread(){
       if (await dirHandle.requestPermission({mode:"read"}) === "granted"){ reset(); await readDir(dirHandle); return done(dirLabel(dirHandle)); }
     }catch(e){ console.warn(e); }
   }
-  if (isHttp){ try{ reset(); if (await loadListing()) return done("Webserver-Verzeichnis"); }catch(e){ console.warn(e); } }
+  if (isHttp){ try{ reset(); if (await loadListing()) return done("web server directory"); }catch(e){ console.warn(e); } }
   pickFolder();
 }
 async function pickFolder(){
@@ -420,10 +420,10 @@ async function pickFolder(){
     dirHandle = h; saveHandle(h); reset();
     const n = await readDir(h);
     done(n && dirLabel(h));
-    if (!n) notice(`Im Ordner „${esc(h.name)}“ liegen keine CSV-Dateien.`);
-  }catch(e){ if (e.name !== "AbortError") notice("Ordner konnte nicht gelesen werden: " + esc(e.message)); }
+    if (!n) notice(`The folder “${esc(h.name)}” contains no CSV files.`);
+  }catch(e){ if (e.name !== "AbortError") notice("Could not read folder: " + esc(e.message)); }
 }
-async function loadLocal(files, label = "manuell"){
+async function loadLocal(files, label = "manual"){
   let n = 0;
   for (const f of files) if (/\.csv$/i.test(f.name) && addFile(f.name, await f.text(), f.lastModified)) n++;
   if (n) sources.add(label);
@@ -435,24 +435,24 @@ function renderWelcome(){
   const known = dirHandle && canPick;
   $("#welcome").innerHTML = `
     <div class="wico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-8l-2-2H4a1 1 0 0 0-1 1z"/><path d="M12 11v5m0 0-2-2m2 2 2-2"/></svg></div>
-    <h2>${known ? "Daten neu einlesen" : "CSV-Ordner verbinden"}</h2>
+    <h2>${known ? "Reload data" : "Connect CSV folder"}</h2>
     <p>${known
-      ? `Der Browser braucht deine Bestätigung, um den Ordner <b>„${esc(dirHandle.name)}“</b> erneut zu lesen.`
-      : "Wähle den Ordner, in dem die täglichen VMM-Exporte (PROD und TEST) landen – normalerweise <code>report</code>."}</p>
-    <button class="bigbtn" id="wbtn">${known ? `„${esc(dirHandle.name)}“ einlesen` : "Ordner wählen"}</button>
+      ? `The browser needs your confirmation to read the folder <b>“${esc(dirHandle.name)}”</b> again.`
+      : "Choose the folder where the daily VMM exports (PROD and TEST) are stored – usually <code>report</code>."}</p>
+    <button class="bigbtn" id="wbtn">${known ? `Load “${esc(dirHandle.name)}”` : "Choose folder"}</button>
     <p class="small">${canPick
-      ? (known ? `<button class="linkbtn" id="wother">Anderen Ordner wählen</button> · ` : "") + "Der Browser merkt sich den Ordner und liest ihn bei den nächsten Starts automatisch ein (bzw. mit einem Klick)."
-      : "Dieser Browser kann sich den Ordner nicht merken (Edge und Chrome können das) – die Auswahl ist bei jedem Besuch nötig."}
-      <br>Oder CSV-Dateien einfach auf diese Seite ziehen.</p>`;
+      ? (known ? `<button class="linkbtn" id="wother">Choose another folder</button> · ` : "") + "The browser remembers the folder and loads it automatically next time (or with a single click)."
+      : "This browser cannot remember the folder (Edge and Chrome can) – you need to choose it on every visit."}
+      <br>Or simply drag CSV files onto this page.</p>`;
   $("#wbtn").onclick = known ? reread : pickFolder;
   if ($("#wother")) $("#wother").onclick = pickFolder;
 }
 
-/* ================= Auswertung ================= */
+/* ================= Aggregation ================= */
 const allExports = () => [...exportsMap.values()];
 const envsList = () => [...new Set(allExports().map(e => e.env))].sort((a, b) => envOrder(a) - envOrder(b) || a.localeCompare(b));
 const monthsList = () => [...new Set(allExports().map(e => e.date.slice(0,7)))].sort();
-const monthLabel = (m, opt = {month:"long", year:"numeric"}) => { const [y, mo] = m.split("-"); return new Date(y, mo-1, 1).toLocaleDateString("de-CH", opt); };
+const monthLabel = (m, opt = {month:"long", year:"numeric"}) => { const [y, mo] = m.split("-"); return new Date(y, mo-1, 1).toLocaleDateString("en-GB", opt); };
 const daysInMonth = m => { const [y, mo] = m.split("-").map(Number); return new Date(y, mo, 0).getDate(); };
 const isOk = s => /^responding$/i.test(s);
 const zero = keys => Object.fromEntries(keys.map(k => [k, 0]));
@@ -499,7 +499,7 @@ function render(){
   if (!ms.length){ renderWelcome(); ["#chips","#spark","#kpis","#chart","#split","#clusters","#hosts","#months","#files","#foot","#heroSub","#heroEnv"].forEach(s => $(s).innerHTML = ""); $("#heroNum").textContent = "–"; return; }
   if (!ms.includes(curMonth)) curMonth = ms[ms.length-1];
   const a = monthAgg(curMonth), prev = ms.indexOf(curMonth) > 0 ? monthAgg(ms[ms.indexOf(curMonth)-1]) : null;
-  if (envFilter !== "ALLE" && !a.envs.includes(envFilter)) envFilter = "ALLE";
+  if (envFilter !== "ALL" && !a.envs.includes(envFilter)) envFilter = "ALL";
   $("#chips").innerHTML = ms.slice().reverse().map(m => `<button class="chip${m === curMonth ? " on" : ""}" data-m="${m}">${monthLabel(m)}</button>`).join("");
   renderHero(a, prev, ms); renderKPIs(a); renderChart(a); renderSplit(a); renderHosts(a); renderMonths(ms);
   renderFooter(); checkFreshness();
@@ -516,20 +516,20 @@ function countUp(el, to){
 function deltaBadge(d, light){
   if (d === null) return "";
   const cls = d > 0 ? "up" : d < 0 ? "down" : "eq", txt = (d > 0 ? "▲ +" : d < 0 ? "▼ " : "± ") + fmt(d);
-  return light ? `<span class="pill">${txt} ggü. Vormonat</span>` : `<span class="badge ${cls}">${txt}</span>`;
+  return light ? `<span class="pill">${txt} vs. previous month</span>` : `<span class="badge ${cls}">${txt}</span>`;
 }
 function renderHero(a, prev, ms){
   const running = a.month === new Date().toISOString().slice(0,7);
-  $("#eyebrow").textContent = `Zu meldende Windows-Server-Cores · ${a.envs.join(" + ")} · ${monthLabel(a.month)}${running ? " (laufend)" : ""}`;
+  $("#eyebrow").textContent = `Windows Server cores to report · ${a.envs.join(" + ")} · ${monthLabel(a.month)}${running ? " (in progress)" : ""}`;
   countUp($("#heroNum"), a.lic);
-  $("#heroSub").innerHTML = `<span>${fmt(a.lic/2)} × 2‑Core‑Packs</span>${deltaBadge(prev ? a.lic - prev.lic : null, true)}`;
+  $("#heroSub").innerHTML = `<span>${fmt(a.lic/2)} × 2‑core packs</span>${deltaBadge(prev ? a.lic - prev.lic : null, true)}`;
   $("#heroEnv").innerHTML = a.envs.map(e => `<span class="henv"><i style="background:${envColor(e)}"></i>${esc(e)} <b class="num">${fmt(a.env[e])}</b></span>`).join("");
   const last = ms.slice(-12), vals = last.map(m => monthAgg(m).lic), max = Math.max(...vals, 1);
   const W = 380, H = 96, gap = 6, bw = Math.min(40, (W - gap * (last.length - 1)) / last.length), x0 = W - (bw + gap) * last.length + gap;
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="SPLA Cores pro Monat">`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="SPLA cores per month">`;
   last.forEach((m, i) => {
     const h = Math.max(3, (H - 34) * vals[i] / max), x = x0 + i * (bw + gap), y = H - 16 - h, on = m === a.month;
-    s += `<g data-m="${m}"><rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="4" fill="#fff" opacity="${on ? 1 : .35}"><title>${monthLabel(m)}: ${fmt(vals[i])} Cores</title></rect>
+    s += `<g data-m="${m}"><rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="4" fill="#fff" opacity="${on ? 1 : .35}"><title>${monthLabel(m)}: ${fmt(vals[i])} cores</title></rect>
       <text class="lbl" x="${x + bw/2}" y="${H - 3}" text-anchor="middle">${monthLabel(m, {month:"short"})}</text>
       ${on ? `<text class="val" x="${x + bw/2}" y="${y - 5}" text-anchor="middle">${fmt(vals[i])}</text>` : ""}</g>`;
   });
@@ -546,21 +546,21 @@ function renderKPIs(a){
   const dim = daysInMonth(a.month), running = a.month === new Date().toISOString().slice(0,7);
   const svg = i => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[i]}</svg>`;
   const k = (icon, c, l, v, s, cls = "") => `<div class="card kpi ${cls}" style="--c:${c}"><div class="ico">${svg(icon)}</div><div><div class="l">${l}</div><div class="v num">${v}</div><div class="s">${s}</div></div></div>`;
-  // Abdeckung: erwartet = Tage bis heute (laufender Monat) bzw. alle Tage
+  // coverage: expected = days until today (current month) or all days
   const expected = running ? new Date().getDate() : dim;
   const minCov = Math.min(...a.envs.map(e => a.cov[e])), cov = minCov / dim, C = 2 * Math.PI * 18;
   const ringCol = minCov >= dim ? "var(--good)" : minCov >= expected ? "var(--s1)" : "var(--warn)";
   $("#kpis").innerHTML =
     a.envs.map(e => k("env", envColor(e), esc(e), fmt(a.env[e]),
-      `${a.envHosts[e]} Hosts · ${a.lic ? Math.round(a.env[e]/a.lic*100) : 0}% vom Total`, "env")).join("") +
-    k("dc", "var(--s1)", "Datacenter", fmt(a.ed.Datacenter), `${fmt(a.ed.Datacenter/2)} Packs`) +
-    k("std", "var(--s2)", "Standard", fmt(a.ed.Standard), `${fmt(a.ed.Standard/2)} Packs` + (a.ed.Andere ? ` · ${fmt(a.ed.Andere)} andere` : "")) +
-    k("cpu", "var(--text2)", "Physische Cores", fmt(a.phys), a.lic > a.phys ? `+${fmt(a.lic - a.phys)} Mindestlizenz` : "ohne Aufschlag") +
+      `${a.envHosts[e]} hosts · ${a.lic ? Math.round(a.env[e]/a.lic*100) : 0}% of total`, "env")).join("") +
+    k("dc", "var(--s1)", "Datacenter", fmt(a.ed.Datacenter), `${fmt(a.ed.Datacenter/2)} packs`) +
+    k("std", "var(--s2)", "Standard", fmt(a.ed.Standard), `${fmt(a.ed.Standard/2)} packs` + (a.ed.Other ? ` · ${fmt(a.ed.Other)} other` : "")) +
+    k("cpu", "var(--text2)", "Physical cores", fmt(a.phys), a.lic > a.phys ? `+${fmt(a.lic - a.phys)} minimum licensing` : "no surcharge") +
     `<div class="card kpi"><svg class="ring" width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" stroke="var(--surface2)"/><circle cx="22" cy="22" r="18" stroke="${ringCol}" stroke-linecap="round" stroke-dasharray="${C*cov} ${C}" transform="rotate(-90 22 22)"/></svg>
-      <div><div class="l">Tages-Exporte</div>
+      <div><div class="l">Daily exports</div>
       <div class="cov num" style="font-size:15px;font-weight:600;margin:3px 0">${a.envs.map(e => `<span class="${a.cov[e] < expected ? "bad" : ""}"><i style="background:${envColor(e)}"></i>${a.cov[e]}</span>`).join("")}<span class="muted" style="font-weight:400">/ ${dim}</span></div>
-      <div class="s">${a.envs.every(e => a.cov[e] >= dim) ? "vollständig" : a.envs.every(e => a.cov[e] >= expected) ? "laufender Monat, bisher vollständig"
-        : `<span style="color:var(--warn)">fehlt: ${a.envs.filter(e => a.cov[e] < expected).map(e => `${esc(e)} ${expected - a.cov[e]}×`).join(", ")}</span>`}</div></div></div>`;
+      <div class="s">${a.envs.every(e => a.cov[e] >= dim) ? "complete" : a.envs.every(e => a.cov[e] >= expected) ? "current month, complete so far"
+        : `<span style="color:var(--warn)">missing: ${a.envs.filter(e => a.cov[e] < expected).map(e => `${esc(e)} ${expected - a.cov[e]}×`).join(", ")}</span>`}</div></div></div>`;
 }
 
 function niceStep(max){ const r = max / 4, p = Math.pow(10, Math.floor(Math.log10(r))); return [1,2,5,10].map(m => m*p).find(s => s >= r); }
@@ -572,12 +572,12 @@ function renderChart(a){
   const keys = chartMode === "env" ? a.envs : EDS.filter(k => a.ed[k]);
   const col = chartMode === "env" ? envColor : k => ED[k], val = (e, k) => chartMode === "env" ? e.env[k] : e.ed[k];
   $("#chartLegend").innerHTML = keys.map(k => `<span><i class="${chartMode === "env" ? "round" : ""}" style="background:${col(k)}"></i>${esc(k)}</span>`).join("") +
-    `<span class="muted"><b style="color:var(--warn)">!</b> Export fehlt</span>`;
+    `<span class="muted"><b style="color:var(--warn)">!</b> export missing</span>`;
   const dim = daysInMonth(a.month), byDay = new Map(a.daily.map(x => [x.d, x]));
   const step = niceStep(Math.max(a.lic, 1)), max = Math.ceil(Math.max(a.lic, ...a.daily.map(x => x.total), 1) * 1.08 / step) * step;
   const W = 820, H = 280, L = 40, B = 24, T = 16, bw = (W - L) / dim, ih = H - T - B;
   const yv = v => T + ih * (1 - v / max);
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lizenzpflichtige Cores pro Tag">`, hits = "";
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Licensable cores per day">`, hits = "";
   for (let v = 0; v <= max; v += step) s += `<line class="grid" x1="${L}" x2="${W}" y1="${yv(v)}" y2="${yv(v)}"/><text class="ax num" x="${L-8}" y="${yv(v)+4}" text-anchor="end">${fmt(v)}</text>`;
   for (let i = 1; i <= dim; i++){
     const d = `${a.month}-${String(i).padStart(2,"0")}`, x = L + (i-1) * bw + 1.5, w = Math.max(bw - 3, 1), e = byDay.get(d);
@@ -585,24 +585,24 @@ function renderChart(a){
       const segs = keys.filter(k => val(e, k) > 0);
       let base = 0;
       segs.forEach((k, j) => {
-        const y1 = yv(base + val(e, k)), h = yv(base) - y1 - (j ? 2 : 0);   // 2px Abstand zwischen Segmenten
+        const y1 = yv(base + val(e, k)), h = yv(base) - y1 - (j ? 2 : 0);   // 2px gap between segments
         s += j === segs.length - 1 ? `<path d="${topRounded(x, y1, w, h, 3)}" fill="${col(k)}"/>` : `<rect x="${x}" y="${y1}" width="${w}" height="${h}" fill="${col(k)}"/>`;
         base += val(e, k);
       });
       if (e.have.length < a.envs.length) s += `<text class="gapmark" x="${x + w/2}" y="${yv(e.total) - 4}" text-anchor="middle">!</text>`;
       hits += `<rect class="hit" data-d="${d}" x="${L + (i-1) * bw}" y="${T}" width="${bw}" height="${ih}"/>`;
     }
-    if (i === 1 || i % 5 === 0) s += `<text class="ax" x="${L + (i-.5) * bw}" y="${H-6}" text-anchor="middle">${i}.</text>`;
+    if (i === 1 || i % 5 === 0) s += `<text class="ax" x="${L + (i-.5) * bw}" y="${H-6}" text-anchor="middle">${i}</text>`;
   }
-  s += `<line class="peak" x1="${L}" x2="${W}" y1="${yv(a.lic)}" y2="${yv(a.lic)}"/><text class="peaklbl num" x="${W}" y="${yv(a.lic)-6}" text-anchor="end">Monatswert ${fmt(a.lic)}</text>`;
+  s += `<line class="peak" x1="${L}" x2="${W}" y1="${yv(a.lic)}" y2="${yv(a.lic)}"/><text class="peaklbl num" x="${W}" y="${yv(a.lic)-6}" text-anchor="end">Monthly value ${fmt(a.lic)}</text>`;
   $("#chart").innerHTML = s + hits + "</svg>";
-  $("#chartsub").textContent = `${monthLabel(a.month)} · Total aller Umgebungen · gestrichelt: Summe der Peaks pro Host = Reporting-Wert`;
+  $("#chartsub").textContent = `${monthLabel(a.month)} · total of all environments · dashed: sum of peaks per host = reporting value`;
   $("#chart").onmousemove = ev => {
     const d = ev.target.dataset?.d; if (!d) return hideTip();
     const e = byDay.get(d);
     const row = (c, l, v, r) => `<div class="r"><span><i class="${r ? "round" : ""}" style="background:${c}"></i>${esc(l)}</span><b class="num">${v}</b></div>`;
-    showTip(ev, `<div class="t">${new Date(d).toLocaleDateString("de-CH", {weekday:"short", day:"numeric", month:"long"})}</div>
-      <div class="h">Umgebung</div>${a.envs.map(k => row(envColor(k), k, e.have.includes(k) ? fmt(e.env[k]) : '<span style="color:var(--warn)">kein Export</span>', true)).join("")}
+    showTip(ev, `<div class="t">${new Date(d).toLocaleDateString("en-GB", {weekday:"short", day:"numeric", month:"long"})}</div>
+      <div class="h">Environment</div>${a.envs.map(k => row(envColor(k), k, e.have.includes(k) ? fmt(e.env[k]) : '<span style="color:var(--warn)">no export</span>', true)).join("")}
       <div class="h">Edition</div>${EDS.filter(k => e.ed[k]).map(k => row(ED[k], k, fmt(e.ed[k]))).join("")}
       <div class="r" style="border-top:1px solid var(--line);margin-top:6px;padding-top:4px"><span>Total · ${e.n} Hosts</span><b class="num">${fmt(e.total)}</b></div>`);
   };
@@ -619,7 +619,7 @@ function renderSplit(a){
   const tot = a.lic || 1;
   const bar = (title, entries, col, round) => `<h3>${title}</h3><div class="split">${entries.map(([k, v]) => `<b style="width:${v/tot*100}%;background:${col(k)}" title="${esc(k)}: ${fmt(v)}"></b>`).join("")}</div>
     <div class="legend">${entries.map(([k, v]) => `<span><i class="${round ? "round" : ""}" style="background:${col(k)}"></i>${esc(k)} <b class="num">${fmt(v)}</b> <span class="muted">${Math.round(v/tot*100)}%</span></span>`).join("")}</div>`;
-  $("#split").innerHTML = bar("Umgebung", a.envs.map(e => [e, a.env[e]]).filter(([, v]) => v), envColor, true) +
+  $("#split").innerHTML = bar("Environment", a.envs.map(e => [e, a.env[e]]).filter(([, v]) => v), envColor, true) +
                           bar("Edition", EDS.map(k => [k, a.ed[k]]).filter(([, v]) => v), k => ED[k]);
   const cl = new Map();
   for (const h of a.hosts){
@@ -632,19 +632,19 @@ function renderSplit(a){
   $("#clusters").innerHTML = list.map(c => `<div class="crow">
       <div class="top2"><span title="${esc(c.name)}">${etag(c.env)} ${esc(c.name.split(".")[0])}</span><b class="num">${fmt(c.total)}</b></div>
       <div class="track" style="width:${Math.max(c.total/max*100, 2)}%">${EDS.filter(k => c[k]).map(k => `<b style="flex:${c[k]};background:${ED[k]}" title="${k}: ${fmt(c[k])}"></b>`).join("")}</div>
-      <div class="meta">${c.n} Host${c.n > 1 ? "s" : ""}${c.name.includes(".") ? " · " + esc(c.name.split(".").slice(1).join(".")) : ""}</div></div>`).join("");
+      <div class="meta">${c.n} host${c.n > 1 ? "s" : ""}${c.name.includes(".") ? " · " + esc(c.name.split(".").slice(1).join(".")) : ""}</div></div>`).join("");
 }
 
-const cols = [["env","Umgebung"],["name","Host"],["cluster","Cluster"],["ed","Edition"],["cpus","CPU","n"],["peakPhys","Phys.","n"],["peakLic","SPLA Cores","n"],["daysSeen","Tage","n"],["state","Status"]];
+const cols = [["env","Environment"],["name","Host"],["cluster","Cluster"],["ed","Edition"],["cpus","CPU","n"],["peakPhys","Phys.","n"],["peakLic","SPLA cores","n"],["daysSeen","Days","n"],["state","Status"]];
 function renderHosts(a){
-  $("#envFilter").innerHTML = ["ALLE", ...a.envs].map(e => `<button data-v="${esc(e)}" class="${e === envFilter ? "on" : ""}">${e === "ALLE" ? "Alle" : `<i style="background:${envColor(e)}"></i>${esc(e)}`} <span class="muted">${e === "ALLE" ? a.hosts.length : a.envHosts[e]}</span></button>`).join("");
+  $("#envFilter").innerHTML = ["ALL", ...a.envs].map(e => `<button data-v="${esc(e)}" class="${e === envFilter ? "on" : ""}">${e === "ALL" ? "All" : `<i style="background:${envColor(e)}"></i>${esc(e)}`} <span class="muted">${e === "ALL" ? a.hosts.length : a.envHosts[e]}</span></button>`).join("");
   const {key, dir} = sortState, maxLic = Math.max(...a.hosts.map(h => h.peakLic), 1), ql = query.toLowerCase();
-  const list = a.hosts.filter(h => (envFilter === "ALLE" || h.env === envFilter) && (!ql || [h.env, h.name, h.cluster, h.os, h.desc, h.ed].join(" ").toLowerCase().includes(ql)))
+  const list = a.hosts.filter(h => (envFilter === "ALL" || h.env === envFilter) && (!ql || [h.env, h.name, h.cluster, h.os, h.desc, h.ed].join(" ").toLowerCase().includes(ql)))
     .sort((x, y) => (typeof x[key] === "number" ? x[key] - y[key] : String(x[key]).localeCompare(String(y[key]))) * dir || envOrder(x.env) - envOrder(y.env) || x.name.localeCompare(y.name));
   let h = `<thead><tr>${cols.map(([c, l, n]) => `<th class="${n||""}" data-k="${c}">${l}${key === c ? (dir > 0 ? " ↑" : " ↓") : ""}</th>`).join("")}</tr></thead><tbody>`;
   for (const x of list){
     const dot = !isOk(x.state) ? "crit" : x.notResp ? "warn" : "";
-    const partial = x.daysSeen < a.cov[x.env] ? `<br><small class="muted">${+x.first.slice(8)}.–${+x.last.slice(8)}.</small>` : "";
+    const partial = x.daysSeen < a.cov[x.env] ? `<br><small class="muted">${+x.first.slice(8)}–${+x.last.slice(8)}</small>` : "";
     h += `<tr>
       <td>${etag(x.env)}</td>
       <td class="host"><span class="dot ${dot}"></span><b>${esc(x.name)}</b><small>${esc(x.os.replace(/^Microsoft\s+/i, ""))}${x.desc ? " · " + esc(x.desc) : ""}</small></td>
@@ -652,18 +652,18 @@ function renderHosts(a){
       <td><span class="tag"><i style="background:${ED[x.ed]}"></i>${x.ed}</span></td>
       <td class="n">${x.cpus} × ${x.cpc}</td>
       <td class="n">${fmt(x.peakPhys)}</td>
-      <td class="n"><div class="barcell">${x.peakLic > x.peakPhys ? '<span class="minnote" title="Mindestlizenzierung (8 pro CPU / 16 pro Server)">MIN</span>' : ""}<div class="minibar"><b style="width:${x.peakLic/maxLic*100}%;background:${ED[x.ed]}"></b></div><b class="num" style="min-width:2.5em">${fmt(x.peakLic)}</b></div></td>
+      <td class="n"><div class="barcell">${x.peakLic > x.peakPhys ? '<span class="minnote" title="Minimum licensing (8 per CPU / 16 per server)">MIN</span>' : ""}<div class="minibar"><b style="width:${x.peakLic/maxLic*100}%;background:${ED[x.ed]}"></b></div><b class="num" style="min-width:2.5em">${fmt(x.peakLic)}</b></div></td>
       <td class="n">${x.daysSeen}${partial}</td>
-      <td>${esc(x.state)}${x.notResp ? ` <small class="muted" title="An ${x.notResp} Tag(en) nicht 'Responding'">(${x.notResp}× n.r.)</small>` : ""}</td></tr>`;
+      <td>${esc(x.state)}${x.notResp ? ` <small class="muted" title="Not 'Responding' on ${x.notResp} day(s)">(${x.notResp}× n.r.)</small>` : ""}</td></tr>`;
   }
   const sum = (f, l = list) => l.reduce((s, x) => s + f(x), 0);
   const shownEnvs = a.envs.filter(e => list.some(x => x.env === e));
   h += `</tbody><tfoot>`;
   if (shownEnvs.length > 1) h += shownEnvs.map(e => { const l = list.filter(x => x.env === e);
     return `<tr class="subt"><td>${etag(e)}</td><td colspan="3">${l.length} Hosts</td><td class="n">${fmt(sum(x => x.cpus, l))} CPUs</td><td class="n">${fmt(sum(x => x.peakPhys, l))}</td><td class="n">${fmt(sum(x => x.peakLic, l))}</td><td colspan="2"></td></tr>`; }).join("");
-  h += `<tr><td colspan="4">${envFilter === "ALLE" && !ql ? "Total alle Umgebungen" : "Total Auswahl"} · ${list.length} Hosts</td><td class="n">${fmt(sum(x => x.cpus))} CPUs</td><td class="n">${fmt(sum(x => x.peakPhys))}</td><td class="n">${fmt(sum(x => x.peakLic))}</td><td colspan="2"></td></tr></tfoot>`;
+  h += `<tr><td colspan="4">${envFilter === "ALL" && !ql ? "Total all environments" : "Total selection"} · ${list.length} Hosts</td><td class="n">${fmt(sum(x => x.cpus))} CPUs</td><td class="n">${fmt(sum(x => x.peakPhys))}</td><td class="n">${fmt(sum(x => x.peakLic))}</td><td colspan="2"></td></tr></tfoot>`;
   $("#hosts").innerHTML = h;
-  $("#hostsub").textContent = `${monthLabel(a.month)} · Peak pro Host · Spaltenkopf klicken zum Sortieren`;
+  $("#hostsub").textContent = `${monthLabel(a.month)} · peak per host · click a column header to sort`;
   $("#hosts thead").onclick = e => {
     const c = e.target.closest("th")?.dataset.k; if (!c) return;
     sortState = {key:c, dir: sortState.key === c ? -sortState.dir : (typeof a.hosts[0]?.[c] === "number" ? -1 : 1)};
@@ -673,13 +673,13 @@ function renderHosts(a){
 
 function renderMonths(ms){
   const aggs = ms.map(monthAgg).reverse(), max = Math.max(...aggs.map(a => a.lic), 1), envs = envsList();
-  let h = `<thead><tr><th>Monat</th><th>Exporte</th><th class="n">Hosts</th>${envs.map(e => `<th class="n">${esc(e)}</th>`).join("")}<th class="n">Datacenter</th><th class="n">Standard</th><th class="n">SPLA Cores (Total)</th><th class="n">Packs</th><th class="n">Δ Vormonat</th></tr></thead><tbody>`;
+  let h = `<thead><tr><th>Month</th><th>Exports</th><th class="n">Hosts</th>${envs.map(e => `<th class="n">${esc(e)}</th>`).join("")}<th class="n">Datacenter</th><th class="n">Standard</th><th class="n">SPLA cores (total)</th><th class="n">Packs</th><th class="n">Δ prev. month</th></tr></thead><tbody>`;
   const today = new Date(), curM = today.toISOString().slice(0,7);
   aggs.forEach((a, i) => {
     const prev = aggs[i+1], dim = daysInMonth(a.month), expected = a.month === curM ? today.getDate() : dim;
     h += `<tr class="click${a.month === curMonth ? " sel" : ""}" data-m="${a.month}">
       <td><b>${monthLabel(a.month)}</b></td>
-      <td><span class="cov num">${envs.map(e => `<span class="${(a.cov[e] || 0) < expected ? "bad" : ""}" title="${esc(e)}: ${a.cov[e] || 0} von ${dim} Tagen"><i style="background:${envColor(e)}"></i>${a.cov[e] || 0}</span>`).join("")}<span class="muted">/ ${dim}</span></span></td>
+      <td><span class="cov num">${envs.map(e => `<span class="${(a.cov[e] || 0) < expected ? "bad" : ""}" title="${esc(e)}: ${a.cov[e] || 0} of ${dim} days"><i style="background:${envColor(e)}"></i>${a.cov[e] || 0}</span>`).join("")}<span class="muted">/ ${dim}</span></span></td>
       <td class="n">${a.hosts.length}</td>
       ${envs.map(e => `<td class="n">${fmt(a.env[e] || 0)}</td>`).join("")}
       <td class="n">${fmt(a.ed.Datacenter)}</td><td class="n">${fmt(a.ed.Standard)}</td>
@@ -698,13 +698,13 @@ function lastPerEnv(){
 function renderFooter(){
   const envs = envsList(), last = lastPerEnv();
   $("#files").innerHTML = envs.map(e => { const l = allExports().filter(x => x.env === e).sort((x, y) => x.date.localeCompare(y.date));
-    return `<p>${etag(e)} ${l.length} Exporte: ${l.map(x => esc(x.file)).join(", ")}</p>`; }).join("");
-  $("#foot").innerHTML = `Quelle: ${[...sources].join(" + ") || "–"} · ${exportsMap.size} Tages-Exporte · letzter Export ${envs.map(e => `${esc(e)} ${new Date(last[e]).toLocaleDateString("de-CH")}`).join(", ")} · geladen ${new Date().toLocaleString("de-CH", {dateStyle:"short", timeStyle:"short"})}`;
+    return `<p>${etag(e)} ${l.length} exports: ${l.map(x => esc(x.file)).join(", ")}</p>`; }).join("");
+  $("#foot").innerHTML = `Source: ${[...sources].join(" + ") || "–"} · ${exportsMap.size} daily exports · latest export ${envs.map(e => `${esc(e)} ${new Date(last[e]).toLocaleDateString("en-GB")}`).join(", ")} · loaded ${new Date().toLocaleString("en-GB", {dateStyle:"short", timeStyle:"short"})}`;
 }
 function checkFreshness(){
   const last = lastPerEnv(), today = new Date().setHours(0,0,0,0);
   const stale = Object.entries(last).map(([e, d]) => [e, d, Math.floor((today - new Date(d + "T00:00").getTime()) / 864e5)]).filter(([, , age]) => age > 1);
-  notice(stale.length ? "Tages-Export veraltet: " + stale.map(([e, d, age]) => `<b>${esc(e)}</b> zuletzt am ${new Date(d).toLocaleDateString("de-CH")} (vor ${age} Tagen)`).join(", ") + " – läuft der tägliche Export noch?" : "");
+  notice(stale.length ? "Daily export outdated: " + stale.map(([e, d, age]) => `<b>${esc(e)}</b> last on ${new Date(d).toLocaleDateString("en-GB")} (${age} days ago)`).join(", ") + " – is the daily export still running?" : "");
 }
 
 /* ================= Events ================= */
@@ -717,16 +717,16 @@ $("#envFilter").onclick = e => { const v = e.target.closest("button")?.dataset.v
 $("#q").oninput = e => { query = e.target.value; renderHosts(monthAgg(curMonth)); };
 $("#reload").onclick = reread;
 $("#pick").onclick = pickFolder;
-$("#dir").onchange = e => { const fl = [...e.target.files]; e.target.value = ""; if (fl.length){ reset(); loadLocal(fl, "Ordner (einmalig gewählt)"); } };
+$("#dir").onchange = e => { const fl = [...e.target.files]; e.target.value = ""; if (fl.length){ reset(); loadLocal(fl, "folder (chosen once)"); } };
 $("#exp").onclick = () => {
   if (!curMonth) return;
   const a = monthAgg(curMonth), q = v => `"${String(v).replace(/"/g,'""')}"`;
-  const L = [["Monat","Umgebung","Host","Cluster","Edition","OperatingSystem","CPUs","CoresPerCPU","PhysCores","SPLACores","CorePacks2","TageGesehen","ErsterTag","LetzterTag"]];
+  const L = [["Month","Environment","Host","Cluster","Edition","OperatingSystem","CPUs","CoresPerCPU","PhysCores","SPLACores","CorePacks2","DaysSeen","FirstDay","LastDay"]];
   a.hosts.slice().sort((x, y) => envOrder(x.env) - envOrder(y.env) || x.name.localeCompare(y.name))
     .forEach(h => L.push([curMonth,h.env,h.name,h.cluster,h.ed,h.os,h.cpus,h.cpc,h.peakPhys,h.peakLic,h.peakLic/2,h.daysSeen,h.first,h.last]));
-  for (const e of a.envs) L.push(["TOTAL",e,"","","Alle","","","",a.envPhys[e],a.env[e],a.env[e]/2,"","",""]);
-  for (const k of EDS) if (a.ed[k]) L.push(["TOTAL","Alle","","",k,"","","","",a.ed[k],a.ed[k]/2,"","",""]);
-  L.push(["TOTAL","Alle","","","Alle","",a.cpus,"",a.phys,a.lic,a.lic/2,"","",""]);
+  for (const e of a.envs) L.push(["TOTAL",e,"","","All","","","",a.envPhys[e],a.env[e],a.env[e]/2,"","",""]);
+  for (const k of EDS) if (a.ed[k]) L.push(["TOTAL","All","","",k,"","","","",a.ed[k],a.ed[k]/2,"","",""]);
+  L.push(["TOTAL","All","","","All","",a.cpus,"",a.phys,a.lic,a.lic/2,"","",""]);
   const link = Object.assign(document.createElement("a"), {href:URL.createObjectURL(new Blob(["﻿" + L.map(r => r.map(q).join(";")).join("\r\n")], {type:"text/csv"})), download:`SPLA_Report_${curMonth}.csv`});
   link.click(); URL.revokeObjectURL(link.href);
 };
