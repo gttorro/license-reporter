@@ -3,4 +3,4 @@
 "HV-T02","CL-TEST01.test.example","2","16","64","Intel","3200","Microsoft Windows Server 2025 Datacenter ","","Responding"
 "HV-T03","CL-TEST01.test.example","2","16","64","Intel","3200","Microsoft Windows Server 2025 Datacenter ","","Not Responding"
 "hv-tlab01",,"2","12","48","Intel","2400","Microsoft Windows Server 2016 Datacenter ","Lab","Responding"
-"hv-tst01",,"1","8","16","Intel","3000","Microsoft Windows Server 2022 Standard ","Testumgebung Edge","Responding"
+"hv-tst01",,"1","8","16","Intel","3000","Microsoft Windows Server 2022 Standard ","Test Environment Edge","Responding"
