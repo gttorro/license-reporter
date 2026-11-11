@@ -55,10 +55,10 @@ On startup the dashboard tries to read the CSV files automatically:
 | # | Scenario | How it works |
 |---|----------|--------------|
 | 1 | **Via a web server** | Fully automatic on every visit. The server must allow directory listing for `report/` only (IIS *Directory Browsing*, Apache `Options +Indexes`, nginx `autoindex on`). There must be no `index.html` / `default.htm` inside `report/`. |
-| 2 | **Opened locally / from a network share** in Edge or Chrome | The first time, click **„Ordner wählen“** (*choose folder*) and select the `report` folder. The browser remembers it and loads it automatically on later visits, or asks for permission again with a single click. |
-| 3 | **Other browsers** (e.g. Firefox) | Click **„Ordner wählen“** on every visit, or drag & drop the CSV files onto the page. |
+| 2 | **Opened locally / from a network share** in Edge or Chrome | The first time, click **Choose folder** and select the `report` folder. The browser remembers it and loads it automatically on later visits, or asks for permission again with a single click. |
+| 3 | **Other browsers** (e.g. Firefox) | Click **Choose folder** on every visit, or drag & drop the CSV files onto the page. |
 
-🔄 **„Neu einlesen“** (*reload*) re-reads the folder at any time, e.g. after a new export has arrived.
+🔄 **Reload** re-reads the folder at any time, e.g. after a new export has arrived.
 
 ---
 
