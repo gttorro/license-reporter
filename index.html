@@ -139,6 +139,7 @@ tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--line)}
 tfoot tr.subt td{font-weight:500;color:var(--text2);border-top:0;padding-top:3px;padding-bottom:3px}
 tr.sel{background:var(--s1soft)!important}
 tr.click{cursor:pointer}
+tr.excl td{opacity:.55}
 .host b{font-weight:600}
 .host small{display:block;color:var(--muted);font-size:11.5px;margin-left:16px}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px;background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 20%,transparent)}
@@ -270,7 +271,8 @@ body.over::after{content:"Drop CSV files here";position:fixed;inset:12px;border:
         <li>One export per day and environment. The environment is part of the file name, before the date: <code>VMMHostExport_PROD_YYYYMMDD.csv</code>, <code>VMMHostExport_TEST_YYYYMMDD.csv</code>.</li>
         <li>All physical cores of a host are counted. VMM's <code>CoresPerCPU</code> includes hyper-threading, so physical cores = <code>PhysicalCPUCount × CoresPerCPU ÷ 2</code>; hyper-threads are not licensed.</li>
         <li>Windows Server minimum licensing: 8 cores per processor, 16 cores per server, in 2‑core packs.</li>
-        <li>Monthly value per host = peak across all daily exports of the month. A host counts as soon as it appears on any day.</li>
+        <li>Only hosts with <code>ComputerState</code> = <code>Responding</code> are counted. A host that is not responding on a day is ignored for that day.</li>
+        <li>Monthly value per host = peak across the days of the month on which it was responding. A host that was not responding on any day of the month is listed but not counted.</li>
         <li><b>Total = sum of all environments</b> (PROD + TEST). The breakdown by environment and edition is shown for verification.</li>
         <li>Edition is taken from <code>OperatingSystem</code> (Datacenter / Standard); the last day of the month is decisive.</li>
         <li>Data source: the <code>report/</code> subfolder. Loaded automatically on startup via the web server's directory listing or the folder remembered by the browser (Edge/Chrome), otherwise via “Choose folder” or drag &amp; drop.</li>
@@ -502,22 +504,26 @@ function monthAgg(month){
   for (const e of ex){
     const day = byDate.get(e.date); day.have.push(e.env); cov[e.env]++;
     for (const h of e.hosts){
-      day.env[h.env] += h.lic; day.ed[h.ed] += h.lic; day.total += h.lic; day.n++;
+      const ok = isOk(h.state);
+      // Hosts that are not "Responding" on a day are not counted for that day.
+      if (ok){ day.env[h.env] += h.lic; day.ed[h.ed] += h.lic; day.total += h.lic; day.n++; }
       const key = h.env + "|" + h.name;
       let a = hosts.get(key);
-      if (!a){ a = {...h, peakLic:0, peakPhys:0, daysSeen:0, first:e.date, notResp:0}; hosts.set(key, a); }
+      if (!a){ a = {...h, peakLic:0, peakPhys:0, daysSeen:0, first:e.date, notResp:0, counted:false}; hosts.set(key, a); }
       Object.assign(a, {cluster:h.cluster || a.cluster, os:h.os, ed:h.ed, desc:h.desc, state:h.state, cpus:h.cpus, lpc:h.lpc, cpc:h.cpc, last:e.date});
-      a.peakLic = Math.max(a.peakLic, h.lic); a.peakPhys = Math.max(a.peakPhys, h.phys);
-      a.daysSeen++; if (!isOk(h.state)) a.notResp++;
+      if (ok){ a.peakLic = Math.max(a.peakLic, h.lic); a.peakPhys = Math.max(a.peakPhys, h.phys); a.counted = true; }
+      a.daysSeen++; if (!ok) a.notResp++;
     }
   }
   const list = [...hosts.values()];
   const sum = (f, pred = () => true) => list.filter(pred).reduce((s, h) => s + f(h), 0);
   const a = {month, envs, dates, daily:[...byDate.values()], hosts:list, cov,
-    lic:sum(h => h.peakLic), phys:sum(h => h.peakPhys), cpus:sum(h => h.cpus),
+    counted:list.filter(h => h.counted).length, excluded:list.filter(h => !h.counted).length,
+    lic:sum(h => h.peakLic), phys:sum(h => h.peakPhys), cpus:sum(h => h.cpus, h => h.counted),
     ed:Object.fromEntries(EDS.map(k => [k, sum(h => h.peakLic, h => h.ed === k)])),
     env:Object.fromEntries(envs.map(k => [k, sum(h => h.peakLic, h => h.env === k)])),
-    envHosts:Object.fromEntries(envs.map(k => [k, list.filter(h => h.env === k).length])),
+    envHosts:Object.fromEntries(envs.map(k => [k, list.filter(h => h.env === k && h.counted).length])),
+    envAll:Object.fromEntries(envs.map(k => [k, list.filter(h => h.env === k).length])),
     envPhys:Object.fromEntries(envs.map(k => [k, sum(h => h.peakPhys, h => h.env === k)]))};
   aggCache.set(month, a);
   return a;
@@ -589,7 +595,7 @@ function renderKPIs(a){
       `${a.envHosts[e]} hosts · ${a.lic ? Math.round(a.env[e]/a.lic*100) : 0}% of total`, "env")).join("") +
     k("dc", "var(--s1)", "Datacenter", fmt(a.ed.Datacenter), `${fmt(a.ed.Datacenter/2)} packs`) +
     k("std", "var(--s2)", "Standard", fmt(a.ed.Standard), `${fmt(a.ed.Standard/2)} packs` + (a.ed.Other ? ` · ${fmt(a.ed.Other)} other` : "")) +
-    k("cpu", "var(--text2)", "Physical cores", fmt(a.phys), a.lic > a.phys ? `+${fmt(a.lic - a.phys)} minimum licensing` : "no surcharge") +
+    k("cpu", "var(--text2)", "Physical cores", fmt(a.phys), (a.lic > a.phys ? `+${fmt(a.lic - a.phys)} minimum licensing` : "no surcharge") + (a.excluded ? ` · ${a.excluded} not responding excluded` : "")) +
     `<div class="card kpi"><svg class="ring" width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" stroke="var(--surface2)"/><circle cx="22" cy="22" r="18" stroke="${ringCol}" stroke-linecap="round" stroke-dasharray="${C*cov} ${C}" transform="rotate(-90 22 22)"/></svg>
       <div><div class="l">Daily exports</div>
       <div class="cov num" style="font-size:15px;font-weight:600;margin:3px 0">${a.envs.map(e => `<span class="${a.cov[e] < expected ? "bad" : ""}"><i style="background:${envColor(e)}"></i>${a.cov[e]}</span>`).join("")}<span class="muted" style="font-weight:400">/ ${dim}</span></div>
@@ -659,7 +665,7 @@ function renderSplit(a){
   for (const h of a.hosts){
     const key = h.env + "|" + (h.cluster || "Standalone");
     const c = cl.get(key) || {env:h.env, name:h.cluster || "Standalone", n:0, total:0, ...zero(EDS)};
-    c.n++; c.total += h.peakLic; c[h.ed] += h.peakLic; cl.set(key, c);
+    if (h.counted) c.n++; c.total += h.peakLic; c[h.ed] += h.peakLic; cl.set(key, c);
   }
   const list = [...cl.values()].sort((x, y) => envOrder(x.env) - envOrder(y.env) || x.env.localeCompare(y.env) || (x.name === "Standalone") - (y.name === "Standalone") || y.total - x.total);
   const max = Math.max(...list.map(c => c.total), 1);
@@ -668,12 +674,12 @@ function renderSplit(a){
   $("#clusters").innerHTML = list.slice(pg.from, pg.to).map(c => `<div class="crow">
       <div class="top2"><span title="${esc(c.name)}">${etag(c.env)} ${esc(c.name.split(".")[0])}</span><b class="num">${fmt(c.total)}</b></div>
       <div class="track" style="width:${Math.max(c.total/max*100, 2)}%">${EDS.filter(k => c[k]).map(k => `<b style="flex:${c[k]};background:${ED[k]}" title="${k}: ${fmt(c[k])}"></b>`).join("")}</div>
-      <div class="meta">${c.n} host${c.n > 1 ? "s" : ""}${c.name.includes(".") ? " · " + esc(c.name.split(".").slice(1).join(".")) : ""}</div></div>`).join("");
+      <div class="meta">${c.n} host${c.n !== 1 ? "s" : ""}${c.name.includes(".") ? " · " + esc(c.name.split(".").slice(1).join(".")) : ""}</div></div>`).join("");
 }
 
 const cols = [["env","Environment"],["name","Host"],["cluster","Cluster"],["ed","Edition"],["cpus","CPU","n"],["peakPhys","Phys.","n"],["peakLic","SPLA cores","n"],["daysSeen","Days","n"],["state","Status"]];
 function renderHosts(a){
-  $("#envFilter").innerHTML = ["ALL", ...a.envs].map(e => `<button data-v="${esc(e)}" class="${e === envFilter ? "on" : ""}">${e === "ALL" ? "All" : `<i style="background:${envColor(e)}"></i>${esc(e)}`} <span class="muted">${e === "ALL" ? a.hosts.length : a.envHosts[e]}</span></button>`).join("");
+  $("#envFilter").innerHTML = ["ALL", ...a.envs].map(e => `<button data-v="${esc(e)}" class="${e === envFilter ? "on" : ""}">${e === "ALL" ? "All" : `<i style="background:${envColor(e)}"></i>${esc(e)}`} <span class="muted">${e === "ALL" ? a.hosts.length : a.envAll[e]}</span></button>`).join("");
   const {key, dir} = sortState, maxLic = Math.max(...a.hosts.map(h => h.peakLic), 1), ql = query.toLowerCase();
   const list = a.hosts.filter(h => (envFilter === "ALL" || h.env === envFilter) && (!ql || [h.env, h.name, h.cluster, h.os, h.desc, h.ed].join(" ").toLowerCase().includes(ql)))
     .sort((x, y) => (typeof x[key] === "number" ? x[key] - y[key] : String(x[key]).localeCompare(String(y[key]))) * dir || envOrder(x.env) - envOrder(y.env) || x.name.localeCompare(y.name));
@@ -683,7 +689,7 @@ function renderHosts(a){
   for (const x of list.slice(pg.from, pg.to)){
     const dot = !isOk(x.state) ? "crit" : x.notResp ? "warn" : "";
     const partial = x.daysSeen < a.cov[x.env] ? `<br><small class="muted">${+x.first.slice(8)}–${+x.last.slice(8)}</small>` : "";
-    h += `<tr>
+    h += `<tr${x.counted ? "" : ' class="excl" title="Not responding on any day of the month – not counted"'}>
       <td>${etag(x.env)}</td>
       <td class="host"><span class="dot ${dot}"></span><b>${esc(x.name)}</b><small>${esc(x.os.replace(/^Microsoft\s+/i, ""))}${x.desc ? " · " + esc(x.desc) : ""}</small></td>
       <td class="cl">${x.cluster ? esc(x.cluster.split(".")[0]) : '<span class="muted">Standalone</span>'}</td>
@@ -692,14 +698,14 @@ function renderHosts(a){
       <td class="n">${fmt(x.peakPhys)}</td>
       <td class="n"><div class="barcell">${x.peakLic > x.peakPhys ? '<span class="minnote" title="Minimum licensing (8 per CPU / 16 per server)">MIN</span>' : ""}<div class="minibar"><b style="width:${x.peakLic/maxLic*100}%;background:${ED[x.ed]}"></b></div><b class="num" style="min-width:2.5em">${fmt(x.peakLic)}</b></div></td>
       <td class="n">${x.daysSeen}${partial}</td>
-      <td>${esc(x.state)}${x.notResp ? ` <small class="muted" title="Not 'Responding' on ${x.notResp} day(s)">(${x.notResp}× n.r.)</small>` : ""}</td></tr>`;
+      <td>${esc(x.state)}${!x.counted ? ` <small class="muted">· not counted</small>` : x.notResp ? ` <small class="muted" title="Not 'Responding' on ${x.notResp} day(s) – those days are not counted">(${x.notResp}× n.r.)</small>` : ""}</td></tr>`;
   }
   const sum = (f, l = list) => l.reduce((s, x) => s + f(x), 0);
   const shownEnvs = a.envs.filter(e => list.some(x => x.env === e));
   h += `</tbody><tfoot>`;
   if (shownEnvs.length > 1) h += shownEnvs.map(e => { const l = list.filter(x => x.env === e);
-    return `<tr class="subt"><td>${etag(e)}</td><td colspan="3">${l.length} Hosts</td><td class="n">${fmt(sum(x => x.cpus, l))} CPUs</td><td class="n">${fmt(sum(x => x.peakPhys, l))}</td><td class="n">${fmt(sum(x => x.peakLic, l))}</td><td colspan="2"></td></tr>`; }).join("");
-  h += `<tr><td colspan="4">${envFilter === "ALL" && !ql ? "Total all environments" : "Total selection"} · ${list.length} Hosts</td><td class="n">${fmt(sum(x => x.cpus))} CPUs</td><td class="n">${fmt(sum(x => x.peakPhys))}</td><td class="n">${fmt(sum(x => x.peakLic))}</td><td colspan="2"></td></tr></tfoot>`;
+    return `<tr class="subt"><td>${etag(e)}</td><td colspan="3">${l.filter(x => x.counted).length} Hosts</td><td class="n">${fmt(sum(x => x.counted ? x.cpus : 0, l))} CPUs</td><td class="n">${fmt(sum(x => x.peakPhys, l))}</td><td class="n">${fmt(sum(x => x.peakLic, l))}</td><td colspan="2"></td></tr>`; }).join("");
+  h += `<tr><td colspan="4">${envFilter === "ALL" && !ql ? "Total all environments" : "Total selection"} · ${list.filter(x => x.counted).length} Hosts${list.some(x => !x.counted) ? ` <small class="muted">(+${list.filter(x => !x.counted).length} not responding)</small>` : ""}</td><td class="n">${fmt(sum(x => x.counted ? x.cpus : 0))} CPUs</td><td class="n">${fmt(sum(x => x.peakPhys))}</td><td class="n">${fmt(sum(x => x.peakLic))}</td><td colspan="2"></td></tr></tfoot>`;
   $("#hosts").innerHTML = h;
   $("#hostsub").textContent = `${monthLabel(a.month)} · peak per host · click a column header to sort`;
   $("#hosts thead").onclick = e => {
@@ -718,7 +724,7 @@ function renderMonths(ms){
     h += `<tr class="click${a.month === curMonth ? " sel" : ""}" data-m="${a.month}">
       <td><b>${monthLabel(a.month)}</b></td>
       <td><span class="cov num">${envs.map(e => `<span class="${(a.cov[e] || 0) < expected ? "bad" : ""}" title="${esc(e)}: ${a.cov[e] || 0} of ${dim} days"><i style="background:${envColor(e)}"></i>${a.cov[e] || 0}</span>`).join("")}<span class="muted">/ ${dim}</span></span></td>
-      <td class="n">${a.hosts.length}</td>
+      <td class="n">${a.counted}</td>
       ${envs.map(e => `<td class="n">${fmt(a.env[e] || 0)}</td>`).join("")}
       <td class="n">${fmt(a.ed.Datacenter)}</td><td class="n">${fmt(a.ed.Standard)}</td>
       <td class="n"><div class="barcell"><div class="minibar">${envs.filter(e => a.env[e]).map(e => `<b style="width:${a.env[e]/max*100}%;background:${envColor(e)}"></b>`).join("")}</div><b class="num" style="min-width:2.5em">${fmt(a.lic)}</b></div></td>
@@ -762,12 +768,12 @@ $("#dir").onchange = e => { const fl = [...e.target.files]; e.target.value = "";
 $("#exp").onclick = () => {
   if (!curMonth) return;
   const a = monthAgg(curMonth), q = v => `"${String(v).replace(/"/g,'""')}"`;
-  const L = [["Month","Environment","Host","Cluster","Edition","OperatingSystem","CPUs","CoresPerCPU","PhysCoresPerCPU","PhysCores","SPLACores","CorePacks2","DaysSeen","FirstDay","LastDay"]];
+  const L = [["Month","Environment","Host","Cluster","Edition","OperatingSystem","CPUs","CoresPerCPU","PhysCoresPerCPU","PhysCores","SPLACores","CorePacks2","DaysSeen","DaysNotResponding","Counted","FirstDay","LastDay"]];
   a.hosts.slice().sort((x, y) => envOrder(x.env) - envOrder(y.env) || x.name.localeCompare(y.name))
-    .forEach(h => L.push([curMonth,h.env,h.name,h.cluster,h.ed,h.os,h.cpus,h.lpc,h.cpc,h.peakPhys,h.peakLic,h.peakLic/2,h.daysSeen,h.first,h.last]));
-  for (const e of a.envs) L.push(["TOTAL",e,"","","All","","","",a.envPhys[e],a.env[e],a.env[e]/2,"","",""]);
-  for (const k of EDS) if (a.ed[k]) L.push(["TOTAL","All","","",k,"","","","",a.ed[k],a.ed[k]/2,"","",""]);
-  L.push(["TOTAL","All","","","All","",a.cpus,"","",a.phys,a.lic,a.lic/2,"","",""]);
+    .forEach(h => L.push([curMonth,h.env,h.name,h.cluster,h.ed,h.os,h.cpus,h.lpc,h.cpc,h.peakPhys,h.peakLic,h.peakLic/2,h.daysSeen,h.notResp,h.counted ? "yes" : "no",h.first,h.last]));
+  for (const e of a.envs) L.push(["TOTAL",e,"","","All","","","",a.envPhys[e],a.env[e],a.env[e]/2,"","","","",""]);
+  for (const k of EDS) if (a.ed[k]) L.push(["TOTAL","All","","",k,"","","","",a.ed[k],a.ed[k]/2,"","","","",""]);
+  L.push(["TOTAL","All","","","All","",a.cpus,"","",a.phys,a.lic,a.lic/2,"","","","",""]);
   const link = Object.assign(document.createElement("a"), {href:URL.createObjectURL(new Blob(["﻿" + L.map(r => r.map(q).join(";")).join("\r\n")], {type:"text/csv"})), download:`SPLA_Report_${curMonth}.csv`});
   link.click(); URL.revokeObjectURL(link.href);
 };
